@@ -1,0 +1,32 @@
+{
+"templates": {
+    "objectDescriptor": {
+        "type": "ontological_category",
+        "referent": "referent",
+        "givenness": "givenness",
+        "number": "number",
+        "specificWh": "specificWh",
+        "gender": "gender",
+        "pointers": {
+            "PropertyModifier": {"property": "value"},
+            "ScalarModifier": {"property": "value"},
+            "TrajectorLandmark": {"decriptor": "locationDescriptor"},
+            "EventDescriptor": {"descriptor": "processDescriptor"}
+        }
+    },
+    "spgDescriptor": {
+        "goal": null,
+        "source": null,
+        "path": null
+    },
+    "locationDescriptor": {
+        "relation": null,
+        "objectDescriptor": {"descriptor": "objectDescriptor"}
+    },
+    "processFeatures": {
+        "tense": "tense",
+        "voice": "voice",
+        "negated": "negated"
+    }
+}
+}

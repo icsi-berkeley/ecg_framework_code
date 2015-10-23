@@ -1,0 +1,9 @@
+{
+"templates": {
+    "ComplexED": {
+        "condition": {"parameters": "ed1"},
+        "core": {"parameters": "ed2"},
+        "complexKind": "complexKind"
+    }
+}
+}

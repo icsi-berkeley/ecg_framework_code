@@ -1,0 +1,71 @@
+{
+"templates": {
+    "MotionPath": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "control_state": "ongoing",
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary",
+        "collaborative": null,
+        "heading": "heading",
+        "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0}}},
+        "spg": {"descriptor": "spgDescriptor"},
+        "direction": "direction",
+        "speed": 0.5
+    },
+    "Stasis": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "state": {"method": "get_state"},
+        "negated": false,
+        "actionary": "actionary",
+        "p_features": {"descriptor": "processFeatures"}
+    },
+    "ForceApplication": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "control_state": "ongoing",
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary",
+        "collaborative": null,
+        "actedUpon": {"descriptor": "objectDescriptor"}
+    },
+    "StagedProcess": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "control_state": "stageRole",
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary"
+    },
+    "Perception": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "content": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary"
+    },
+
+    "Measure": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "measurement": {"descriptor": "scaleDescriptor"},
+        "p_features": {"descriptor": "processFeatures"},
+        "dimension": "dimension",
+        "actionary": "actionary"
+    },
+
+
+    "CauseEffect": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "causalAgent": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "causalProcess": {"parameters": "process1"},
+        "affectedProcess": {"parameters": "process2"}
+    },
+    "ComplexProcess": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "process1": {"parameters": "process1"},
+        "process2": {"parameters": "process2"},
+        "complexKind": "complexKind"
+    },
+    "Process": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "p_features": {"descriptor": "processFeatures"}
+    }
+    } 
+}

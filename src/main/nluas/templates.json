@@ -1,0 +1,55 @@
+{
+"templates": {
+
+
+	"_general": {
+		"kind": "unknown",
+		"action": null,
+		"protagonist": null,
+		"p_features": null
+		},
+	"_execute": {
+		"kind": "execute",
+		"control_state": "ongoing",
+		"action": null,
+		"protagonist": null,
+		"collaborative": false,
+		"p_features": null
+		},
+	"_assertion": {
+		"kind": "assertion",
+		"action": null,
+		"protagonist": null,
+		"action": null,
+		"predication": null,
+		"p_features": null
+		}, 
+	"_YN": {
+		"kind": "query",
+		"protagonist": null,
+		"action": null,
+		"predication": null,
+		"p_features": null
+		},
+	"_WH": {
+		"kind": "query",
+		"protagonist": null,
+		"action": null,
+		"predication": null,
+		"specificWh": null,
+		"p_features": null
+		},
+	"_conditional_imperative": {
+		"kind": "_conditional_imperative",
+		"condition": null,
+		"command": "_execute"
+		},	
+	"_conditional_declarative": {
+		"kind": "_conditional_declarative",
+		"condition": null,
+		"command": "_assertion"
+		}
+
+	}
+}
+
