@@ -7,6 +7,9 @@ A simple program to output n-tuples using Analyzer+Specializer. Not reliant on a
 """
 
 from core_specializer_alt import *
+from nluas.ntuple_decoder import *
+
+decoder = NtupleDecoder()
 
 analyzer = Analyzer("http://localhost:8090")
 cs = CoreSpecializer(analyzer)
@@ -23,6 +26,7 @@ while True:
 			for fs in semspecs:
 				try:
 					ntuple = cs.specialize(fs)
+					decoder.pprint_ntuple(ntuple)
 				except Exception as e:
 					print(e)
 		except Exception as e:
