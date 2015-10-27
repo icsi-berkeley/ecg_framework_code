@@ -8,6 +8,7 @@ A simple program to output n-tuples using Analyzer+Specializer. Not reliant on a
 
 from core_specializer_alt import *
 from nluas.ntuple_decoder import *
+import traceback
 
 decoder = NtupleDecoder()
 
@@ -27,7 +28,10 @@ while True:
 				try:
 					ntuple = cs.specialize(fs)
 					decoder.pprint_ntuple(ntuple)
+					break
 				except Exception as e:
+					traceback.print_exc()
 					print(e)
 		except Exception as e:
+			traceback.print_exc()
 			print(e)

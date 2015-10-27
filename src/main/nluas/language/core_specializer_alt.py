@@ -204,7 +204,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return predication
 
     def get_spgDescriptor(self, spg):
-        final = self.descriptor_templates['spgDescriptor']
+        final = {}
+        descriptor = self.descriptor_templates['spgDescriptor']
         if "goal" in spg.__dir__():
             final['goal'] = self.get_goal(spg)
         return final

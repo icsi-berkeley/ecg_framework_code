@@ -39,6 +39,12 @@
         "p_features": {"descriptor": "processFeatures"},
         "actionary": "actionary"
     },
+    "ChangeLocation": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "landmark": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"}
+    },
 
     "Measure": {
         "protagonist": {"descriptor": "objectDescriptor"},
@@ -47,8 +53,6 @@
         "dimension": "dimension",
         "actionary": "actionary"
     },
-
-
     "CauseEffect": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "causalAgent": {"descriptor": "objectDescriptor"},
@@ -56,11 +60,17 @@
         "causalProcess": {"parameters": "process1"},
         "affectedProcess": {"parameters": "process2"}
     },
+    "Change": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "state": {"method": "get_state"}
+    },
     "ComplexProcess": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "process1": {"parameters": "process1"},
         "process2": {"parameters": "process2"},
-        "complexKind": "complexKind"
+        "complexKind": "complexKind",
+        "actionary": "actionary"
     },
     "Process": {
         "protagonist": {"descriptor": "objectDescriptor"},
