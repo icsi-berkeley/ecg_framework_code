@@ -58,7 +58,8 @@
         "causalAgent": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",
         "causalProcess": {"parameters": "process1"},
-        "affectedProcess": {"parameters": "process2"}
+        "affectedProcess": {"parameters": "process2"},
+        "complexKind": "complexKind"
     },
     "Change": {
         "protagonist": {"descriptor": "objectDescriptor"},

@@ -109,20 +109,25 @@ class CoreProblemSolver(CoreAgent):
         self.decoder.pprint_ntuple(ntuple)
 
     def route_action(self, parameters, predicate):
-        action = parameters['actionary']
-        try:
-            dispatch = getattr(self, "{}_{}".format(predicate, action))
-            dispatch(parameters)
-            self.history.insert(0, (parameters, True))
-        except AttributeError as e:
-            traceback.print_exc()
-            message = "I cannot solve the '{}' action".format(action)
-            self.history.insert(0, (parameters, False))
-            self.identification_failure(message)
+        if "complexKind" in parameters and parameters['complexKind'] == "serial":
+            self.solve_serial(parameters, predicate)
+        else:
+            action = parameters['actionary']
+            try:
+                dispatch = getattr(self, "{}_{}".format(predicate, action))
+                dispatch(parameters)
+                self.history.insert(0, (parameters, True))
+            except AttributeError as e:
+                traceback.print_exc()
+                message = "I cannot solve the '{}' action".format(action)
+                self.history.insert(0, (parameters, False))
+                self.identification_failure(message)
 
     def close(self):
         return
 
+    def solve_serial(self, parameters):
+        print(parameters)
 
     def check_for_clarification(self, ntuple):
         """ Will need to be replaced by a process that checks whether ntuple needs clarification.

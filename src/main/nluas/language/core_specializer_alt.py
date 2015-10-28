@@ -161,7 +161,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 return method(eventProcess)
             elif "descriptor" in value:
                 method = getattr(self, "get_{}".format(value["descriptor"]))
-                if hasattr(eventProcess, key) and repr(getattr(eventProcess, key)) != "None":
+                if hasattr(eventProcess, key) and getattr(eventProcess, key):
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
                     # HACK: 
@@ -204,13 +204,15 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return predication
 
     def get_spgDescriptor(self, spg):
-        final = self.descriptor_templates['spgDescriptor']
-        print(type(spg.goal))
-        if spg.goal:
+        descriptor = self.descriptor_templates['spgDescriptor']
+        final = {'goal': None,
+                 'source': None,
+                 'path': None}
+        if hasattr(spg, "goal") and spg.goal:
             final['goal'] = self.get_goal(spg)
-        if spg.source:
+        if hasattr(spg, "source") and spg.source:
             final['source'] = self.get_source(spg)
-        if spg.path:
+        if hasattr(spg, "path") and spg.path:
             final['path'] = self.get_path(spg)
         return final
 
@@ -218,6 +220,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         final = {}
         goal = spg.goal
         if goal.type() == "RD":
+            print("here")
             return {'objectDescriptor': self.get_objectDescriptor(goal)}
         return final
 
