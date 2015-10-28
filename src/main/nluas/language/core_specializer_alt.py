@@ -56,7 +56,12 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return base
 
     def specialize_event(self, content):
-        template = self.event_templates[content.type()]
+        ed = content.type()
+        if ed in self.event_templates:
+            template = self.event_templates[ed]
+        else:
+            template = self.event_templates[self.check_parameter_subtypes(ed, self.event_templates)]
+        #template = self.event_templates[content.type()]
         parameters = dict()
         for k, v in template.items():
             if isinstance(v, dict) and "parameters" in v and hasattr(content, v['parameters']):
@@ -128,8 +133,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #else:
         if process in self.parameter_templates:
             template = self.parameter_templates[process]
-        elif self.check_parameter_subtypes(process):
-            subtype = self.check_parameter_subtypes(process)
+        elif self.check_parameter_subtypes(process, self.parameter_templates):
+            subtype = self.check_parameter_subtypes(process, self.parameter_templates)
             #print(subtype)
             template = self.parameter_templates[subtype]
             #print(template)
@@ -147,8 +152,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return parameters
 
 
-    def check_parameter_subtypes(self, process):
-        for key in self.parameter_templates:
+    def check_parameter_subtypes(self, process, templates):
+        for key in templates:
             if self.analyzer.issubtype("SCHEMA", process, key):
                 return key
         return None
@@ -165,7 +170,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
                     # HACK: 
-                    if value['descriptor'] == "objectDescriptor" and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
+                    if value['descriptor'] == "objectDescriptor":# and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
                         self._stacked.append(descriptor)
                     return descriptor
                 if "default" in value:
@@ -220,7 +225,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         final = {}
         goal = spg.goal
         if goal.type() == "RD":
-            print("here")
             return {'objectDescriptor': self.get_objectDescriptor(goal)}
         return final
 
@@ -243,10 +247,12 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         template = self.descriptor_templates['objectDescriptor']
         returned = {}
         for k, v in template.items():
-            if k != "pointers" and v in item.__dir__():
+            if k not in ["pointers", "description"] and hasattr(item, v) and getattr(item, v).type():
                 attribute = getattr(item, v).type()
                 if attribute:
                     returned[k] = attribute
+        if hasattr(item, "description") and item.description:
+            returned['description'] = self.fill_parameters(item.description.eventProcess)
         for pointer, mod in item.pointers.items():
             if pointer in template['pointers']:
                 filler = self.fill_pointer(mod, item)

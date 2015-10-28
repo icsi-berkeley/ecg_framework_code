@@ -65,7 +65,12 @@ class Feature(object):
         return ff[self.__index__]
 
     def __bool__(self):
-        return self.__index__ in self.__features__
+        if self.__index__ in self.__features__:
+            return True
+        #print(self.__type__ == "None")
+        #print(self.__type__)
+        return repr(self) != "None"
+        #return self.__value__ != None
 
         
     def __repr__(self):
@@ -78,7 +83,8 @@ class Feature(object):
             fs = self.__fs__()
             return '[%s %s[%s], roles: %s]' % (ts, t, i, ', '.join(fs.__dict__.keys()))
         else:
-            return str(self)
+            return str(self.__value__)
+
         
     def __int__(self):
         return int(self.__value__)
