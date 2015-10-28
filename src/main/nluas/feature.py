@@ -63,6 +63,10 @@ class Feature(object):
     def __fs__(self):
         ff = self.__features__
         return ff[self.__index__]
+
+    def __bool__(self):
+        return self.__index__ in self.__features__
+
         
     def __repr__(self):
         d = self.__dict__
