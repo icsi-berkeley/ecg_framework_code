@@ -45,6 +45,21 @@
         "landmark": {"descriptor": "objectDescriptor"},
         "p_features": {"descriptor": "processFeatures"}
     },
+    "CausalAction" :{
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "fdType": "fdType",
+        "actionary": "actionary",
+        "p_features": {"descriptor": "processFeatures"},
+        "effect": {"descriptor": "eventRDDescriptor"}
+    },
+    "CausedProcess": {
+        "protagonist": {"descriptor": "eventRDDescriptor"},
+        "fdType": "fdType",
+        "actionary": "actionary",
+        "p_features": {"descriptor": "processFeatures"},
+        "affectedEntity": {"descriptor": "objectDescriptor"},
+        "affectedProcess": {"parameters": "affectedProcess"}
+    },
 
     "Measure": {
         "protagonist": {"descriptor": "objectDescriptor"},

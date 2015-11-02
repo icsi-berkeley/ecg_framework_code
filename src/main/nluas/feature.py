@@ -69,8 +69,21 @@ class Feature(object):
             return True
         #print(self.__type__ == "None")
         #print(self.__type__)
-        return repr(self) != "None"
+        if self.typesystem() == "ONTOLOGY":
+            return True
+        if self.typesystem() == "SCHEMA":
+            return self.has_filler()
+        else:
+            return False
+
         #return self.__value__ != None
+
+    def has_filler(self):
+        try:
+            filler = self.__fs__()
+            return True
+        except Exception as e:
+            return False
 
         
     def __repr__(self):

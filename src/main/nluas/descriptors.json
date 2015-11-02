@@ -28,6 +28,10 @@
         "tense": "tense",
         "voice": "voice",
         "negated": "negated"
+    },
+    "eventFeatures": {
+        "modality": "modality",
+        "negated": "negated"
     }
 }
 }

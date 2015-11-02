@@ -2,32 +2,32 @@
     "imperative": {
         "predicate_type": "command",
         "return_type": "error_descriptor",
-        "parameters": null
+        "eventDescriptor": null
     },
     "conditional_declarative": {
         "predicate_type": "conditional_declarative",
         "return_type": "error_descriptor",
-        "parameters": null
+        "eventDescriptor": null
     },
     "conditional_imperative": {
         "predicate_type": "conditional_imperative",
         "return_type": "error_descriptor",
-        "parameters": null
+        "eventDescriptor": null
     },
     "yn_question": {
         "predicate_type": "query",
         "return_type": "boolean",
-        "parameters": null
+        "eventDescriptor": null
     },
     "wh_question": {
         "predicate_type": "query",
         "return_type": "none", 
-        "parameters": null
+        "eventDescriptor": null
     },
     "declarative": {
         "predicate_type": "assertion",
         "return_type": "error_descriptor",
-        "parameters": null
+        "eventDescriptor": null
     }
     }
 }

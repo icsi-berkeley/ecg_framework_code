@@ -108,6 +108,14 @@ class CoreProblemSolver(CoreAgent):
     def solve_conditional_declarative(self, ntuple):
         self.decoder.pprint_ntuple(ntuple)
 
+    def route_event(self, eventDescription, predicate):
+        features = eventDescription['e_features']
+        if features:
+            print(features)
+        parameters = eventDescription['eventProcess']
+        self.route_action(parameters, predicate)
+
+
     def route_action(self, parameters, predicate):
         if "complexKind" in parameters and parameters['complexKind'] == "serial":
             self.solve_serial(parameters, predicate)
@@ -119,7 +127,7 @@ class CoreProblemSolver(CoreAgent):
                 self.history.insert(0, (parameters, True))
             except AttributeError as e:
                 traceback.print_exc()
-                message = "I cannot solve the '{}' action".format(action)
+                message = "I cannot solve the '{}_{}' action".format(predicate,action)
                 self.history.insert(0, (parameters, False))
                 self.identification_failure(message)
 

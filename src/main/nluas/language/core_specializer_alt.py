@@ -26,9 +26,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
         UtilitySpecializer.__init__(self, analyzer)
         TemplateSpecializer.__init__(self)
-
-        
-
         self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
         self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = OrderedDict()
@@ -61,15 +58,10 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             template = self.event_templates[ed]
         else:
             template = self.event_templates[self.check_parameter_subtypes(ed, self.event_templates)]
-        #template = self.event_templates[content.type()]
-        parameters = dict()
+        eventDescriptor = dict()
         for k, v in template.items():
-            if isinstance(v, dict) and "parameters" in v and hasattr(content, v['parameters']):
-                eventProcess = getattr(content, v['parameters']).eventProcess
-                parameters[k] = [self.fill_parameters(eventProcess)]
-            else:
-                parameters[k] = self.fill_value(k, v, content)
-        return parameters
+            eventDescriptor[k] = self.fill_value(k, v, content)
+        return eventDescriptor
 
 
     def specialize(self, fs):
@@ -77,14 +69,15 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         content = fs.m.content
         eventProcess = fs.m.content.eventProcess
         ntuple = self.mood_templates[mood]
-        if content.type() in self.event_templates:
-            ntuple['parameters'] = [self.specialize_event(content)]
+        ntuple['eventDescriptor'] = self.specialize_event(content)
+        #if content.type() in self.event_templates:
+        #    ntuple['parameters'] = [self.specialize_event(content)]
             #return ntuple
-        else:
-            parameters = self.fill_parameters(eventProcess)
-            ntuple['parameters'] = [parameters]
-            if mood == "wh_question":
-                ntuple['return_type'], ntuple['parameters'][0]['specificWh'] = self.get_return_type(parameters)
+        #else:
+        #parameters = self.fill_parameters(eventProcess)
+        #ntuple['parameters'] = [parameters]
+        #if mood == "wh_question":
+        #    ntuple['return_type'], ntuple['parameters'][0]['specificWh'] = self.get_return_type(parameters)
 
         ntuple = self.map_ontologies(ntuple)
 
@@ -102,8 +95,12 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                  "what": "class_reference"}
         for k, v in parameters.items():
             if isinstance(v, dict):
-                if "objectDescriptor" in v and "specificWh" in v['objectDescriptor']:
+                if ("objectDescriptor" in v and "specificWh" in v['objectDescriptor']):
                     number, specificWh = v['objectDescriptor']['number'], v['objectDescriptor']['specificWh']
+                    return_type += returns[number] + "::" + returns[specificWh]
+                    return return_type, specificWh
+                elif  "eventRDDescriptor" in v and "specificWh" in v['eventRDDescriptor']:
+                    number, specificWh = v['eventRDDescriptor']['number'], v['eventRDDescriptor']['specificWh']
                     return_type += returns[number] + "::" + returns[specificWh]
                     return return_type, specificWh
                 else:
@@ -115,40 +112,17 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
 
     def fill_parameters(self, eventProcess):
-        # TODO: Where to handle serial process?
         process = eventProcess.type()
-        """
-        if process == "SerialProcess":
-            p1 = self.fill_parameters(eventProcess.process1)
-            p2 = self.fill_parameters(eventProcess.process2)
-            #f = map(self.fill_parameters, (eventProcess.process1, eventProcess.process2))
-            #new = [item for item in f if type(item) == dict else ]
-            #merged = list(itertools.chain.from_iterable(f))
-            for item in f:
-                yield item
-                #for i in item:
-                #    yield i
-            return f
-        """
-        #else:
         if process in self.parameter_templates:
             template = self.parameter_templates[process]
         elif self.check_parameter_subtypes(process, self.parameter_templates):
             subtype = self.check_parameter_subtypes(process, self.parameter_templates)
-            #print(subtype)
             template = self.parameter_templates[subtype]
-            #print(template)
         else:
             template = self.parameter_templates["Process"]
-        #print(dict(template))
-        #print(template)
         parameters = dict()
-        #template = self.test(parameters, eventProcess)
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
-
-        #except Exception as e:
-        #print("Parameters for process {} not found.".format(process))
         return parameters
 
 
@@ -178,6 +152,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 return None
             elif "parameters" in value and hasattr(eventProcess, value['parameters']):
                 return self.fill_parameters(getattr(eventProcess, value['parameters']))
+            elif "eventDescription" in value and hasattr(eventProcess, value['eventDescription']):
+                return self.specialize_event(getattr(eventProcess, value['eventDescription']))
         elif value and hasattr(eventProcess, key):
             attribute = getattr(eventProcess, key)
             if attribute.type() == "scalarValue":
@@ -188,19 +164,34 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     def get_scaleDescriptor(self, scale):
         return {'units': scale.units.type(), 'value': float(scale.amount.value)}
 
+    def get_property(self, pm):
+        returned = {}
+        negated = False
+        kind = pm.kind.type()
+        if hasattr(pm, "negated") and pm.negated.type() == "yes":
+            negated = True
+        if hasattr(pm, "value"):
+            value = pm.value.type()
+            if value == "scalarValue":
+                value = float(pm.value)
+            returned[pm.property.type()] = value
+        if hasattr(pm, "direction"):
+            returned['direction'] = pm.direction.type()
+        elif self.analyzer.issubtype("ONTOLOGY", pm.property.type(), "scale") and kind == "comparative":
+            if value > .5:
+                returned['direction'] = "increase"
+            else:
+                returned['direction'] = 'decrease'
+        returned['negated'] = negated
+        return returned
+
+
     def get_state(self, eventProcess):
         predication = {}
         state = eventProcess.state
         predication['negated'] = False
         if self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
-            value = state.value.type()
-            negated = False
-            if state.negated.type() == "yes":
-                negated = True
-            if value == "scalarValue":
-                value = float(state.value)
-            predication[state.property.type()] = value
-            predication["negated"] = negated
+            predication = self.get_property(state)
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
             predication['relation']= self.get_locationDescriptor(state.profiledArea) 
             predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
@@ -214,19 +205,23 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                  'source': None,
                  'path': None}
         if hasattr(spg, "goal") and spg.goal:
-            final['goal'] = self.get_goal(spg)
+            final['goal'] = self.get_spgValue(spg, "goal")
         if hasattr(spg, "source") and spg.source:
-            final['source'] = self.get_source(spg)
+            final['source'] = self.get_spgValue(spg, "source")
         if hasattr(spg, "path") and spg.path:
-            final['path'] = self.get_path(spg)
+            final['path'] = self.get_spgValue(spg, "path")
         return final
 
-    def get_goal(self, spg):
+    def get_spgValue(self, spg, valueType):
         final = {}
-        goal = spg.goal
-        if goal.type() == "RD":
-            return {'objectDescriptor': self.get_objectDescriptor(goal)}
+        value = getattr(spg, valueType)
+        #goal = spg.goal
+        if value.index() == spg.landmark.index():
+            return {'objectDescriptor': self.get_objectDescriptor(value)}
+        if value.type() == "RD":
+            return {'objectDescriptor': self.get_objectDescriptor(value)}
         return final
+
 
     def get_processFeatures(self, p_features):
         features = self.descriptor_templates['processFeatures']
@@ -234,6 +229,14 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         for k, v in features.items():
             if k in p_features.__dir__():
                 final[k] = getattr(p_features, v).type()
+        return final
+
+    def get_eventFeatures(self, e_features):
+        features = self.descriptor_templates['eventFeatures']
+        final = {}
+        for k, v in features.items():
+            if k in e_features.__dir__():
+                final[k] = getattr(e_features, v).type()
         return final
 
     def get_objectDescriptor(self, item, resolving=False):
@@ -247,18 +250,31 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         template = self.descriptor_templates['objectDescriptor']
         returned = {}
         for k, v in template.items():
-            if k not in ["pointers", "description"] and hasattr(item, v) and getattr(item, v).type():
+            if k not in ["pointers", "description"] and hasattr(item, v):# and getattr(item, v).type():
                 attribute = getattr(item, v).type()
                 if attribute:
                     returned[k] = attribute
-        if hasattr(item, "description") and item.description:
-            returned['description'] = self.fill_parameters(item.description.eventProcess)
         for pointer, mod in item.pointers.items():
             if pointer in template['pointers']:
                 filler = self.fill_pointer(mod, item)
                 if filler:
                     returned.update(filler)
         return returned
+
+    def get_eventRDDescriptor(self, item):
+        # TODO: Event/entity resolution?
+        returned = self.get_objectDescriptor(item)
+        eventDescription = dict()
+        if hasattr(item, "description") and item.description:
+            eventForm = item.description.eventForm.type()
+            eventDescription['eventForm'] = eventForm
+            if eventForm != "lexical":
+                eventDescription['eventDescription'] = self.specialize_event(item.description)
+            else:
+                eventDescription['description'] = None
+        returned.update(eventDescription)
+        return returned
+
 
     def fill_pointer(self, pointer, item):
         if hasattr(pointer, "modifiedThing") and pointer.modifiedThing.index() != item.index():

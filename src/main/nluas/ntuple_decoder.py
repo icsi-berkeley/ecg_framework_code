@@ -32,8 +32,11 @@ class NtupleDecoder(object):
 	def pprint_ntuple(self, ntuple):
 		print("{}Predicate type {}: {}".format(Color.BOLD, Color.END, ntuple['predicate_type']))
 		print("{}Return type {}: {}".format(Color.BOLD, Color.END, ntuple['return_type']))
-		for param in ntuple['parameters']:
-			for key, value in param.items():
-				if value:
+		for key, value in ntuple['eventDescriptor'].items():
+			if value:
+				if key == "eventProcess":
+					for k, v in value.items():
+						print("{}{}{}: {}".format(Color.BOLD, k, Color.END, v))
+				else:
 					print("{}{}{}: {}".format(Color.BOLD, key, Color.END, value))
 		print("\n")
