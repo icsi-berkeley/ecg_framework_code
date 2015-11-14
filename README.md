@@ -1,5 +1,8 @@
 # framework-code
-Core Framework code for NLU system.
+Core Framework code for NLU system. 
+
+* General description of original system: https://www.icsi.berkeley.edu/pubs/ai/naturallanguage15.pdf
+* Extension/Implementation for multi-agent collaboration: ftp://ftp.icsi.berkeley.edu/pub/feldman/AI-HRI.pdf
 
 System requirements:
 
