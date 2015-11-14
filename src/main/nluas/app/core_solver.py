@@ -111,7 +111,7 @@ class CoreProblemSolver(CoreAgent):
     def route_event(self, eventDescription, predicate):
         features = eventDescription['e_features']
         if features:
-            print(features)
+            efeatures = features['eventFeatures']
         parameters = eventDescription['eventProcess']
         self.route_action(parameters, predicate)
 

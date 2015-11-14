@@ -192,6 +192,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         predication['negated'] = False
         if self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
             predication = self.get_property(state)
+        elif self.analyzer.issubtype("SCHEMA", state.type(), "QuantifiedRD"):
+            predication['amount'] = self.get_scaleDescriptor(state)
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
             predication['relation']= self.get_locationDescriptor(state.profiledArea) 
             predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
@@ -236,7 +238,14 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         final = {}
         for k, v in features.items():
             if k in e_features.__dir__():
-                final[k] = getattr(e_features, v).type()
+                value = getattr(e_features, v).type()
+                if k == "negated":
+                    if value == "yes":
+                        final[k] = True
+                    else:
+                        final[k] = False
+                else:
+                    final[k] = value
         return final
 
     def get_objectDescriptor(self, item, resolving=False):

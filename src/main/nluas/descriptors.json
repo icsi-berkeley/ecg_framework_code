@@ -27,11 +27,13 @@
     "processFeatures": {
         "tense": "tense",
         "voice": "voice",
-        "negated": "negated"
+        "negated": "negated",
+        "progressive": "progressive"
     },
     "eventFeatures": {
         "modality": "modality",
-        "negated": "negated"
+        "negated": "negated",
+        "tense": "tense"
     }
 }
 }
