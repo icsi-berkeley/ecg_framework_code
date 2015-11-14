@@ -3,7 +3,7 @@ Author: seantrott <seantrott@icsi.berkeley.edu>
 
 """
 
-from nluas.language.core_specializer import *
+from nluas.language.core_specializer_alt import *
 from nluas.core_agent import *
 from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
