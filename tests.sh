@@ -1,0 +1,1 @@
+python3 src/tests/specializer_test.py 
