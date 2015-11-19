@@ -12,7 +12,9 @@
             "PropertyModifier": {"property": "value"},
             "ScalarModifier": {"property": "value"},
             "TrajectorLandmark": {"decriptor": "locationDescriptor"},
-            "EventDescriptor": {"descriptor": "processDescriptor"}
+            "EventDescriptor": {"descriptor": "processDescriptor"},
+            "PartWhole": {"part": {"descriptor": "objectDescriptor"}},
+            "Modification": {"modifier": null}
         }
     },
     "spgDescriptor": {

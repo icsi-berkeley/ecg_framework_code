@@ -1,14 +1,14 @@
 """
 author: <seantrott@icsi.berkeley.edu>
 
-Tests CoreSpecializer (currently core_specializer_alt.py) against a JSON struct of sentences/n-tuples.
+Tests CoreSpecializer (currently core_specializer.py) against a JSON struct of sentences/n-tuples.
 Requires the Jython analyzer to be running.
 
 Intended to run with "research.prefs"
 
 """
 
-from nluas.language.core_specializer_alt import *
+from nluas.language.core_specializer import *
 import json
 import unittest
 from json import loads, dumps

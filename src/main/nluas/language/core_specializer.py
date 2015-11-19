@@ -3,12 +3,21 @@ module author: Sean Trott <seantrott@icsi.berkeley.edu>
 
 The Core Specializer performs some basic operations in converting a SemSpec to an n-tuple.
 
+Crucial to its design is the notion of templates, which contain specifications for filling in the n-tuple.
+Templates should be defined declaratively.
+
 """
 
 from nluas.language.specializer_utils import *
+from nluas.language.analyzer_proxy import *
 from nluas.utils import *
+from collections import OrderedDict
 import pickle
 import json
+import os
+import itertools
+import time
+path = os.getcwd() + "/src/main/nluas/"
 
 
 class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
@@ -17,384 +26,328 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
         UtilitySpecializer.__init__(self, analyzer)
         TemplateSpecializer.__init__(self)
+        self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
+        self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
+        self.descriptor_templates = OrderedDict()
+        #self.wrapper_templates = self.read_templates(path+"templates.json")
+        self.initialize_templates()
 
-        self.simple_processes = {'MotionPath': self.params_for_motionPath,
-                                 'Stasis': self.params_for_stasis,
-                                 'ForceApplication': self.params_for_forceapplication,
-                                 'StagedProcess': self.params_for_stagedprocess}
 
-        self.complex_processes = ['CauseEffect', 'SerialProcess']
+        #testing
+        self.protagonist = None
 
-        self.moods = {'YN_Question': self.construct_YN,
-                     'WH_Question': self.construct_WH,
-                     'Declarative': self.construct_Declarative,
-                     'Imperative': self.construct_Imperative,
-                     'Conditional_Imperative': self.construct_condImp,
-                     "Conditional_Declarative": self.construct_condDeclarative
-                     }
+        #self.read_templates
 
-        self.eventProcess = None
-        self.fs = None
-        self.core = None
-
-        self.parameters = []
-
+    def initialize_templates(self):
+        self.parameter_templates = self.read_templates(path+"parameter_templates.json")
+        self.mood_templates = self.read_templates(path+"mood_templates.json")
+        self.descriptor_templates = self.read_templates(path+"descriptors.json")
+        self.event_templates = self.read_templates(path + "event_templates.json")
 
     def read_templates(self, filename):
+        #print("Parsing " + filename)
+        base = OrderedDict()
         with open(filename, "r") as data_file:
-            data = json.loads(data_file.read())
+            #data = json.loads(data_file.read())
+            data = json.load(data_file, object_pairs_hook=OrderedDict)
             for name, template in data['templates'].items():
-                self.__dict__[name] = template
+                setattr(self, name, template)
+                base[name] = template
+                #self.__dict__[name] = template
+        return base
 
-    def get_goal(self, process, params):
-        """ Returns an object descriptor of the goal; used for SPG schemas, like in MotionPath."""
-        g = process.goal
-        goal = dict()
-        if g.type() == 'home':
-            goal['location'] = g.type()
-        elif g.ontological_category.type() == 'heading':
-            goal = None
-            params.update(heading=g.tag.type())
-        elif self.analyzer.issubtype('ONTOLOGY', g.ontological_category.type(), 'part'): # checks if it's a "part" in a part whole relation
-            goal['partDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(g.extensions.whole), 'relation': self.get_objectDescriptor(g)}    
-        elif g.ontological_category.type() == 'region':
-            goal['locationDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(process.landmark), 'relation': self.get_locationDescriptor(g)}  
-        elif g.referent.type() == 'anaphora':
-            try:
-                goal = self.resolve_anaphoricOne(g)
-            except ReferentResolutionException as e:
-                print(e.message)
-        elif g.referent.type():
-            if g.referent.type() == "antecedent":
-                try:
-                    if g.givenness.type() == 'distinct':
-                        goal = self.resolve_anaphoricOne(g)
-                    else:
-                        goal = self.resolve_referents(params['action'])
-                except ReferentResolutionException as e:
-                    print(e.message)
-                    return None
-                # Resolve_referents()
-            else:
-                goal['objectDescriptor'] = self.get_objectDescriptor(g) #{'referent': g.referent.type(), 'type': g.ontological_category.type()}    ## Possibly add "object descriptor" as key here        
-        elif g.ontological_category.type() == 'location':
-            # if complex location, get "location descriptor"
-            goal['location'] = (int(g.xCoord), int(g.yCoord))
+    def specialize_event(self, content):
+        ed = content.type()
+        if ed in self.event_templates:
+            template = self.event_templates[ed]
         else:
-            goal['objectDescriptor'] = self.get_objectDescriptor(g) #properties
-            #goal.objectDescriptor['type'] = goal.type
-        self._stacked.append(goal)
-        return goal   
-
-    def get_protagonist(self, protagonist, process):
-        """ Returns the protagonist of PROCESS. Checks to see what kind of referent / object it is. """
-        pro = protagonist
-        if pro.type() == "ConjRD":
-            p1 = self.get_protagonist(pro.rd1, process)
-            p2 = self.get_protagonist(pro.rd2, process)
-            subject = {'objectDescriptor': {'referent': 'joint', 'joint': {'first': p1, 'second': p2}}}
-        elif protagonist.referent.type() == 'anaphora':
-            try:
-                subject = self.resolve_anaphoricOne(protagonist)
-            except ReferentResolutionException as e:
-                print(e.message)
-        elif hasattr(protagonist, 'referent') and protagonist.referent.type() == "antecedent":
-            try:
-                subject = self.resolve_referents(self.get_actionary(process))
-            except ReferentResolutionException as e:
-                print(e.message)
-                return None
-        else:
-            if not hasattr(protagonist, "referent"):
-                subject = {'objectDescriptor': {'referent': 'unknown'}}
-            else:
-                subject = {'objectDescriptor': self.get_objectDescriptor(protagonist)}
-                if subject['objectDescriptor']['type'] != 'robot':
-                    self._stacked.append(subject)
-        return subject
-
-    def get_actionary(self, process):
-        """ Returns the actionary of PROCESS. Checks to make sure actionary is contained in process. """
-        if hasattr(process, "actionary"):
-            v = process.actionary.type()
-            return v
-        elif process.type() == 'MotionPath':
-           return 'move'
-        return None
-
-    # Returns parameters for Stasis type of process ("the box is red")
-    def params_for_stasis(self, process, params):
-        prop = process.state
-        a = {}
-        a['negated'] = False
-        if "negated" in prop.__dir__() and prop.negated.type() == "yes":
-            a['negated'] = True
-        #params = updated(d, action = process.actionary.type()) #process.protagonist.ontological_category.type())
-        if self.analyzer.issubtype('SCHEMA', prop.type(), 'PropertyModifier'):
-            a[str(prop.property.type())] = prop.value.type()#, 'type': 'property'}
-            if hasattr(prop, 'kind') and prop.kind:
-                a['kind'] = prop.kind.type()
-                if a['kind'] == "comparative" and self.analyzer.issubtype("SCHEMA", prop.type(), "ComparativeAdjModifier"):
-                    a['base'] = {'objectDescriptor': self.get_objectDescriptor(prop.base)}
-        elif self.analyzer.issubtype('SCHEMA', prop.type(), 'RefIdentity'):
-            a['identical']= {'objectDescriptor': self.get_objectDescriptor(prop.second)}
-            params.update(predication = a)
-        elif self.analyzer.issubtype('SCHEMA', prop.type(), 'QuantifiedRD'):
-            a['quantity'] = dict(units=prop.units.type(),
-                                 amount=float(prop.amount.value))
-        elif self.analyzer.issubtype('SCHEMA', prop.type(), 'TrajectorLandmark'):
-            if prop.landmark.referent.type() == 'antecedent':
-                landmark = get_referent(process, params)
-            else:
-                landmark = self.get_objectDescriptor(prop.landmark)
-            a['relation']= self.get_locationDescriptor(prop.profiledArea) 
-            a['objectDescriptor']= landmark
-            #print(prop.profiledArea.ontological_category.type())
-            params.update(predication=a)
-        #if not 'specificWh' in params:  # Check if it's a WH question, in which case we don't want to do "X-check"
-        #    params = self.crosscheck_params(params)
-
-        params.update(predication = a)
-        return params                
-
-
-    
-    def params_for_motionPath(self, process, params):
-        """ returns parameters for motion path process ("move to the box"). """
-        s = self.get_actionDescriptor(process)
-        if 'collaborative' in s:
-            params.update(collaborative=s['collaborative'])
-        if 'speed' in s and s['speed'] is not None:
-            params.update(speed = float(s['speed']))
-        if hasattr(process, 'heading'):
-            if process.heading.type():
-                params.update(heading=process.heading.tag.type())
-        # Is a distance specified?                
-        if hasattr(process.spg, 'distance') and hasattr(process.spg.distance, 'amount'):
-            d = process.spg.distance
-            params.update(distance={"value": float(d.amount.value), "units":d.units.type()})
-        # Is a goal specified?
-        if hasattr(process.spg, 'goal'):
-            params.update(goal = self.get_goal(process.spg, params))
-        if hasattr(process, 'direction'):
-            params.update(direction=process.direction.type())              
-        return params   
-
-    # gets params for force-application, like "push the box"
-    def params_for_forceapplication(self, process, params):
-        """ Gets params for Force Application process. """
-        affected = self.get_protagonist(process.actedUpon, process)
-        params.update(acted_upon=affected)
-        return params   
-
-    def params_for_stagedprocess(self,process, d):
-        params = updated(self._execute, 
-                         action=self.core.m.profiledProcess.actionary.type(), 
-                         protagonist={'objectDescriptor': self.get_objectDescriptor(process.protagonist)})
-        if self.eventProcess.stageRole.type():
-            params.update(control_state=self.eventProcess.stageRole.type())
-        return params  
-
-    def causalProcess(self, process, param_name="_execute"):
-
-        params = updated(self._cause, action = process.actionary.type())
-        params.update(causer = self.get_protagonist(process.protagonist, process))
-        params.update(protagonist = params['causer'])
-        collab = self.get_actionDescriptor(process)
-        if 'collaborative' in collab:
-            params.update(collaborative=collab['collaborative'])
-        if "joint" in params['causer']['objectDescriptor']:
-            params.update(collaborative=True)
-        if hasattr(process, "p_features"):
-            params = updated(params, p_features=self.get_process_features(process.p_features))
-        param_type = getattr(self, param_name)
-        cp = self.params_for_simple(process.process1, param_type)
-        ap = self.params_for_simple(process.process2, param_type)
-        params.update(causalProcess = cp)
-        params.update(affectedProcess = ap)
-        return params
-
-    def process_is_subtype(self, process):
-        for p in self.simple_processes:
-            if self.analyzer.issubtype('SCHEMA', process.type(), p):
-                return p 
-        return False
-
-    # This function just returns params for "where", like "where is Box1". Different process format than "which box is red?"
-    def params_for_where(self, process, d):
-        params = updated(d, action=process.actionary.type())
-        h = process.state.second
-        params.update(protagonist=self.get_protagonist(h, process))
-        return params
-
-    # Dispatches "process" to a function to fill in template, depending on process type. Returns parameters.
-    def params_for_simple(self, process, template):
-        if template == self._WH:
-            if hasattr(process.protagonist, "specificWh"):
-                template['specificWh'] = process.protagonist.specificWh.type()
-                if template['specificWh'] == "where":
-                    return self.params_for_where(process, template)
-
-        params = updated(template, action = self.get_actionary(process))
-
-        if hasattr(process, "protagonist"):
-            params = updated(params, protagonist=self.get_protagonist(process.protagonist, process))
-
-        if hasattr(process, "p_features"):
-            params = updated(params, p_features=self.get_process_features(process.p_features))
-        if not process.type() in self.simple_processes:
-            if self.process_is_subtype(process):
-                return self.simple_processes[sub](process, params)
-            return self.params_for_undefined_process(process, params)
-
-        #assert process.type() in self.simple_processes, 'problem: process type {} not in allowed types'.format(process.type())
-        return self.simple_processes[process.type()](process, params)
-
-    def params_for_undefined_process(self, process, params):
-        return params
-
-
-
-    def get_process_features(self, p_features):
-        features = dict()
-        for role, filler in p_features.__items__():
-            if filler:
-                features[str(role)] = filler.type()
-        return features
-
-    def params_for_compound(self, process, param_name="_execute"):
-        if process.type() == 'SerialProcess':
-            for pgen in chain(map(self.params_for_compound, (process.process1, process.process2))):
-                for p in pgen:
-                    if p is None:
-                        None
-                    else:
-                        yield p
-        elif self.analyzer.issubtype("SCHEMA", process.type(), "CauseEffect"):
-            yield self.causalProcess(process, param_name)
-        elif process.type() == 'CauseEffectProcess':
-            yield self.causalProcess(process, param_name)
-        else:
-            params = getattr(self, param_name)
-            yield self.params_for_simple(process, params)  # EXECUTE is default 
-    
-    def make_parameters(self, fs):
-        # Add mood for conditionals, etc.        
-        mood = fs.m.mood.replace('-', '_')
-        #assert mood in ('YN_Question', 'WH_Question', 'Declarative', 'Imperative', 'Conditional_Imperative', 'Definition')
-
-        assert mood in list(self.moods.keys())
-
-        self.needs_solve = True
-        self.core = fs.rootconstituent.core 
-
-        self.eventProcess = self.core.m.eventProcess
-        return self.moods[mood]()
-
-    def construct_YN(self):
-        params = list(self.params_for_compound(self.eventProcess, "_YN"))
-        return params 
-
-    def construct_WH(self):
-        params = list(self.params_for_compound(self.eventProcess, "_WH"))
-        return params
-
-    def construct_Declarative(self):
-        params = list(self.params_for_compound(self.eventProcess, "_assertion"))
-        return params
-
-    def construct_condImp(self):
-        cond = list(self.params_for_compound(self.core.m.ed1.eventProcess, "_YN")) # Changed so that condition can be compound / cause ("If you pushed the box North, then move box1 then move box2...")
-        params = updated(self._YN)
-        action = list(self.params_for_compound(self.core.m.ed2.eventProcess)) #params_for_compound(core.m.ed1.eventProcess)
-        action2 = []
-        cond2 = []
-        if cond is None or None in action:
-            return None
-        for i in action:
-            action2.append(i)
-        for i in cond:
-            cond2.append(i) 
-        params = [updated(self._conditional_imperative, command=action2, condition=cond2)]
-        return params 
-
-
-    def construct_condDeclarative(self):
-        cond = list(self.params_for_compound(self.core.m.ed1.eventProcess, "_YN")) # Changed so that condition can be compound / cause ("If you pushed the box North, then move box1 then move box2...")
-        params = updated(self._YN)
-        action = list(self.params_for_compound(self.core.m.ed2.eventProcess, "_assertion")) #params_for_compound(core.m.ed1.eventProcess)
-        action2 = []
-        cond2 = []
-        if cond is None or None in action:
-            return None
-        for i in action:
-            action2.append(i)
-        for i in cond:
-            cond2.append(i) 
-        params = [updated(self._conditional_declarative, assertion=action2, condition=cond2)]
-        return params   
-
-    def construct_Imperative(self):
-        t = self.eventProcess.type()
-        allowed_types = dict(compound=self.complex_processes,
-                             simple=list(self.simple_processes.keys()))
-        assert t in flatten(allowed_types.values()), 'problem: process type is: %s' % t
-        if t in allowed_types['simple']:
-            return [self.params_for_simple(self.eventProcess, self._execute)]
-        else:
-            return list(self.params_for_compound(self.eventProcess))  
+            template = self.event_templates[self.check_parameter_subtypes(ed, self.event_templates)]
+        eventDescriptor = dict()
+        for k, v in template.items():
+            eventDescriptor[k] = self.fill_value(k, v, content)
+        return eventDescriptor
 
 
     def specialize(self, fs):
-        """This method takes a SemSpec (the fs parameter) and outputs an n-tuple.
-        """
-        self.fs = fs
-        mood = fs.m.mood.replace('-', '_')
+        mood = str(fs.m.mood).replace("-", "_").lower()
+        content = fs.m.content
+        eventProcess = fs.m.content.eventProcess
+        ntuple = self.mood_templates[mood]
+        ntuple['eventDescriptor'] = self.specialize_event(content)
+        #if content.type() in self.event_templates:
+        #    ntuple['parameters'] = [self.specialize_event(content)]
+            #return ntuple
+        #else:
+        #parameters = self.fill_parameters(eventProcess)
+        #ntuple['parameters'] = [parameters]
+        #if mood == "wh_question":
+        #    ntuple['return_type'], ntuple['parameters'][0]['specificWh'] = self.get_return_type(parameters)
 
-        # Dispatch call to some other specialize_* methods.
-        # Note: now parameters is a sequence.
-        params = self.make_parameters(fs)
-
-        if params is None or params[0] is None:
-            self.needs_solve == False
-            return None
-
-        params = [self.replace_mappings(param) for param in params]
-
-        ntuple = updated(self._wrapper,
-                         getattr(self, 'specialize_%s' % mood)(fs),
-                         parameters=params) #[Struct(param) for param in params])
-
-
-        self.parameters += params
+        ntuple = self.map_ontologies(ntuple)
 
         if self.debug_mode:
             print(ntuple)
-            #dumpfile = open('src/main/pickled.p', 'ab')
-            #pickle.dump(Struct(ntuple), dumpfile)
-            #dumpfile.close()
-            #dumpfile2 = open('src/main/move')
-            #self._output.write("\n\n{0} \n{1} \n{2}".format(mood, self._sentence, str(Struct(ntuple))))
-        return ntuple 
-        #return Struct(ntuple)
+        return dict(ntuple)
 
-    def specialize_Conditional_Declarative(self, fs):
-        return dict(predicate_type='conditional_declarative', return_type = 'error_descriptor')   
 
-    def specialize_Conditional_Imperative(self, fs):
-        return dict(predicate_type='conditional_imperative', return_type = 'error_descriptor')    
+    def get_return_type(self, parameters):
+        return_type, specificWh = "", ""
+        returns = {'plural': "collection_of",
+                 "singular": "singleton",
+                 "which": "instance_reference",
+                 "where": "instance_reference",
+                 "what": "class_reference"}
+        for k, v in parameters.items():
+            if isinstance(v, dict):
+                if ("objectDescriptor" in v and "specificWh" in v['objectDescriptor']):
+                    number, specificWh = v['objectDescriptor']['number'], v['objectDescriptor']['specificWh']
+                    return_type += returns[number] + "::" + returns[specificWh]
+                    return return_type, specificWh
+                elif  "eventRDDescriptor" in v and "specificWh" in v['eventRDDescriptor']:
+                    number, specificWh = v['eventRDDescriptor']['number'], v['eventRDDescriptor']['specificWh']
+                    return_type += returns[number] + "::" + returns[specificWh]
+                    return return_type, specificWh
+                else:
+                    r, w = self.get_return_type(v)
+                    if r != "" and w != "":
+                        return r, w
 
-    def specialize_YN_Question(self, fs):
-        return dict(predicate_type='query', return_type='boolean')
+        return return_type, specificWh
 
-    def specialize_WH_Question(self, fs):
-        specific = fs.m.content.profiledParticipant.specificWh.type()
-        f = 'collection_of' if fs.m.content.profiledParticipant.number.type() == 'plural' else 'singleton'
-        return dict(predicate_type='query',
-                    return_type='%s::class_reference' % f if specific == 'what' else '%s::instance_reference' % f)
 
-    def specialize_Declarative(self, fs):
-        return dict(predicate_type='assertion', return_type='error_descriptor')
+    def fill_parameters(self, eventProcess):
+        process = eventProcess.type()
+        if process in self.parameter_templates:
+            template = self.parameter_templates[process]
+        elif self.check_parameter_subtypes(process, self.parameter_templates):
+            subtype = self.check_parameter_subtypes(process, self.parameter_templates)
+            template = self.parameter_templates[subtype]
+        else:
+            template = self.parameter_templates["Process"]
+        parameters = dict()
+        for key, value in template.items():
+            parameters[key] = self.fill_value(key, value, eventProcess)
+        return parameters
 
-    def specialize_Imperative(self, fs):
-        return dict(predicate_type='command', return_type='error_descriptor')
+
+    def check_parameter_subtypes(self, process, templates):
+        for key in templates:
+            if self.analyzer.issubtype("SCHEMA", process, key):
+                return key
+        return None
+
+    def fill_value(self, key, value, eventProcess):
+        final_value = None
+        if isinstance(value, dict):
+            if "method" in value and hasattr(eventProcess, key):
+                method = getattr(self, value["method"])
+                return method(eventProcess)
+            elif "descriptor" in value:
+                method = getattr(self, "get_{}".format(value["descriptor"]))
+                if hasattr(eventProcess, key) and getattr(eventProcess, key):
+                    attribute = getattr(eventProcess, key)
+                    descriptor = {value['descriptor']: method(attribute)}
+                    # HACK: 
+                    if value['descriptor'] == "objectDescriptor":# and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
+                        self._stacked.append(descriptor)
+                    if key == "protagonist":
+                        self.protagonist = descriptor
+                    return descriptor
+                if "default" in value:
+                    return value['default']
+                return None
+            elif "parameters" in value and hasattr(eventProcess, value['parameters']):
+                return self.fill_parameters(getattr(eventProcess, value['parameters']))
+            elif "eventDescription" in value and hasattr(eventProcess, value['eventDescription']):
+                return self.specialize_event(getattr(eventProcess, value['eventDescription']))
+        elif value and hasattr(eventProcess, key):
+            attribute = getattr(eventProcess, key)
+            if attribute.type() == "scalarValue":
+                return float(attribute)
+            return attribute.type()
+        return final_value
+
+    def get_scaleDescriptor(self, scale):
+        return {'units': scale.units.type(), 'value': float(scale.amount.value)}
+
+    def get_property(self, pm):
+        returned = {}
+        negated = False
+        kind = pm.kind.type()
+        if hasattr(pm, "negated") and pm.negated.type() == "yes":
+            negated = True
+        if hasattr(pm, "value"):
+            value = pm.value.type()
+            if value == "scalarValue":
+                value = float(pm.value)
+            returned[pm.property.type()] = value
+            returned['property'] = pm.property.type()
+        if hasattr(pm, "direction"):
+            returned['direction'] = pm.direction.type()
+        elif self.analyzer.issubtype("ONTOLOGY", pm.property.type(), "scale") and kind == "comparative":
+            if value > .5:
+                returned['direction'] = "increase"
+            else:
+                returned['direction'] = 'decrease'
+        returned['negated'] = negated
+        return returned
+
+
+    def get_state(self, eventProcess):
+        predication = {}
+        state = eventProcess.state
+        predication['negated'] = False
+        if self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
+            predication = self.get_property(state)
+            if self.protagonist and "property" in self.protagonist['objectDescriptor']:
+                prop1, prop2  = predication['property'], self.protagonist['objectDescriptor']['property']['objectDescriptor']['type']
+                if not self.is_compatible('ONTOLOGY', prop1, prop2):
+                    raise Exception("Problem with analysis: the predication '{}' is not compatible with '{}'".format(prop1, prop2))
+        elif self.analyzer.issubtype("SCHEMA", state.type(), "QuantifiedRD"):
+            predication['amount'] = self.get_scaleDescriptor(state)
+        elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
+            predication['relation']= self.get_locationDescriptor(state.profiledArea) 
+            predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
+        elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
+            predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
+        return predication
+
+    def get_spgDescriptor(self, spg):
+        descriptor = self.descriptor_templates['spgDescriptor']
+        final = {'goal': None,
+                 'source': None,
+                 'path': None}
+        if hasattr(spg, "goal") and spg.goal:
+            final['goal'] = self.get_spgValue(spg, "goal")
+        if hasattr(spg, "source") and spg.source:
+            final['source'] = self.get_spgValue(spg, "source")
+        if hasattr(spg, "path") and spg.path:
+            final['path'] = self.get_spgValue(spg, "path")
+        return final
+
+    def get_spgValue(self, spg, valueType):
+        final = {}
+        value = getattr(spg, valueType)
+        #goal = spg.goal
+        if value.index() == spg.landmark.index():
+            return {'objectDescriptor': self.get_objectDescriptor(value)}
+        if value.type() == "RD":
+            return {'objectDescriptor': self.get_objectDescriptor(value)}
+        return final
+
+
+    def get_processFeatures(self, p_features):
+        features = self.descriptor_templates['processFeatures']
+        final = {}
+        for k, v in features.items():
+            if k in p_features.__dir__():
+                final[k] = getattr(p_features, v).type()
+        return final
+
+    def get_eventFeatures(self, e_features):
+        features = self.descriptor_templates['eventFeatures']
+        final = {}
+        for k, v in features.items():
+            if k in e_features.__dir__():
+                value = getattr(e_features, v).type()
+                if k == "negated":
+                    if value == "yes":
+                        final[k] = True
+                    else:
+                        final[k] = False
+                else:
+                    final[k] = value
+        return final
+
+    def get_objectDescriptor(self, item, resolving=False):
+        if 'referent' in item.__dir__() and item.referent.type():
+            if item.referent.type() == "antecedent":
+                return self.resolve_referents()['objectDescriptor']
+            elif item.referent.type() == "anaphora" and not resolving:
+                return self.resolve_anaphoricOne(item)['objectDescriptor']
+        if "pointers" not in item.__dir__():
+            item.pointers = self.invert_pointers(item)
+        template = self.descriptor_templates['objectDescriptor']
+        returned = {}
+        for k, v in template.items():
+            if k not in ["pointers", "description"] and hasattr(item, v):# and getattr(item, v).type():
+                attribute = getattr(item, v).type()
+                if attribute:
+                    returned[k] = attribute
+        for pointer, mod in item.pointers.items():
+            # TODO: check if it's a subcase as well? or don't do this
+            if pointer in template['pointers']:
+                filler = self.fill_pointer(mod, item)
+                if filler:
+                    returned.update(filler)
+        return returned
+
+    def get_eventRDDescriptor(self, item):
+        # TODO: Event/entity resolution?
+        returned = self.get_objectDescriptor(item)
+        eventDescription = dict()
+        if hasattr(item, "description") and item.description:
+            eventForm = item.description.eventForm.type()
+            eventDescription['eventForm'] = eventForm
+            if eventForm != "lexical":
+                eventDescription['eventDescription'] = self.specialize_event(item.description)
+            else:
+                eventDescription['description'] = None
+        returned.update(eventDescription)
+        return returned
+
+
+    def fill_pointer(self, pointer, item):
+        if hasattr(pointer, "modifiedThing") and pointer.modifiedThing.index() != item.index():
+            return None
+        elif hasattr(pointer, "temporality") and pointer.temporality.type() != "atemporal":
+            return None
+        elif hasattr(pointer, "trajector") and pointer.trajector.index() != item.index():
+            return None
+        else:
+            if self.analyzer.issubtype('SCHEMA', pointer.type(), "PropertyModifier"):
+                if pointer.value.type() == "scalarValue":
+                    return {pointer.property.type(): float(pointer.value)}
+                return {pointer.property.type(): pointer.value.type()}
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "TrajectorLandmark"):
+                relation = self.get_locationDescriptor(pointer.profiledArea)
+                landmark = self.get_objectDescriptor(pointer.landmark)
+                return {'locationDescriptor': {'relation': relation,
+                                               'objectDescriptor': landmark}}
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "EventDescriptor") and self.event and hasattr(pointer, "modifiedThing"):
+                self.event = False
+                process= {'processDescriptor': self.get_processDescriptor(pointer.eventProcess, item)}
+                self.event = True
+                return process
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Modification"):# and pointer.modifier.type() == "RD":
+                return dict(property=dict(objectDescriptor=self.get_objectDescriptor(pointer.modifier)))
+
+
+    def get_processDescriptor(self, process, referent):
+        """ Retrieves information about a process, according to existing templates. Meant to be implemented 
+        in specific extensions of this interface. 
+
+        Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
+        """
+        return self.fill_parameters(process)
+
+
+
+#analyzer = Analyzer("http://localhost:8090")
+#cs = CoreSpecializer(analyzer)
+
+
+#parse = analyzer.parse("if the box that John sees is big, it is not red.")[0]
+
+#s = cs.specialize(parse)
+
+#parse = analyzer.parse("the box that he saw")[0]
+#parse = analyzer.parse("Robot1, move north then move south then move west!")[0]
+#parse = analyzer.parse("Robot1, move north then move south!")[0]
+#parse = analyzer.parse("he moved to the box.")[0]
+
+
+
+
+
+

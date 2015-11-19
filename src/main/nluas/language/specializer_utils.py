@@ -82,6 +82,10 @@ class UtilitySpecializer(DebuggingSpecializer):
         self.mappings = self.analyzer.get_mappings()
         self.event = True
 
+
+    def is_compatible(self, typesystem, role1, role2):
+        return self.analyzer.issubtype(typesystem, role1, role2) or self.analyzer.issubtype(typesystem, role2, role1)
+
     """ Input PROCESS, searches SemSpec for Adverb Modifiers. Currently just returns speed,
     but could easily be modified to return general manner information. This might be made more complex
     if we wanted to describe more complex motor routines with adverbs. """
