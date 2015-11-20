@@ -230,7 +230,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         value = getattr(spg, valueType)
         #goal = spg.goal
         if value.type() == "location":
-            return {'location': int(value.xCoord), int(value.xCoord)}
+            return {'location': (int(value.xCoord), int(value.xCoord))}
         if value.index() == spg.landmark.index():
             return {'objectDescriptor': self.get_objectDescriptor(value)}
         if value.type() == "RD":
