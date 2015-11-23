@@ -18,8 +18,9 @@ class WaitingException(Exception):
 class UserAgent(CoreAgent):
     def __init__(self, args):
         #self.ui_parser = self.setup_ui_parser()
-        self.initialize_UI()
+        
         CoreAgent.__init__(self, args)
+        self.initialize_UI()
         #self.ui_parser = self.setup_ui_parser()
         #self.analyzer_port = self.unknown[0]
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
@@ -45,7 +46,7 @@ class UserAgent(CoreAgent):
             except ConnectionRefusedError as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
-                    self.output_stream(message)
+                    self.output_stream(self.name, message)
                     printed = True
                 time.sleep(1)
         self.decoder = NtupleDecoder()
