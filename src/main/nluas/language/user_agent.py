@@ -116,8 +116,8 @@ class UserAgent(CoreAgent):
                 self.specializer.set_debug()
                 specialize = False
             elif specialize:
-                if self.check_spelling(msg):
-                    self.process_input(msg)
+                #if self.check_spelling(msg):
+                self.process_input(msg)
 
 
 

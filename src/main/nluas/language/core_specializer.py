@@ -80,8 +80,10 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #else:
         #parameters = self.fill_parameters(eventProcess)
         #ntuple['parameters'] = [parameters]
-        #if mood == "wh_question":
-        #    ntuple['return_type'], ntuple['parameters'][0]['specificWh'] = self.get_return_type(parameters)
+        print(ntuple['eventDescriptor'])
+        parameters = ntuple['eventDescriptor']['eventProcess']
+        if mood == "wh_question":
+            ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
 
         ntuple = self.map_ontologies(ntuple)
 
@@ -229,7 +231,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         final = {}
         value = getattr(spg, valueType)
         #goal = spg.goal
-        if value.type() == "location":
+        if value.ontological_category.type() == "location":
             return {'location': (int(value.xCoord), int(value.xCoord))}
         if value.index() == spg.landmark.index():
             return {'objectDescriptor': self.get_objectDescriptor(value)}
