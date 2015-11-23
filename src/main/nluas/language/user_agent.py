@@ -74,24 +74,23 @@ class UserAgent(CoreAgent):
         except Exception as e:
             print(e)
 
-    def output_stream(self, message):
+    def output_stream(self, tag, message):
         # Should actually just print to self._out
-        print(message)
+        print("{}: {}".format(tag, message))
 
     def callback(self, ntuple):
         ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "failure":
-            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
+            self.output_stream(ntuple['tag'], ntuple['message'])
             #print(ntuple['message'])
         elif call_type == "clarification":
             #self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
-            output = "{}: {}".format(ntuple['tag'], ntuple['message'])
             #self.prompt(clarification=True, ntuple=ntuple['ntuple'])
-            self.process_clarification(output, ntuple['ntuple'])
+            self.process_clarification(ntuple['tag'], ntuple['message'], ntuple['ntuple'])
             #print(ntuple['ntuple'])
         elif call_type == "response":
-            self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
+            self.output_stream(ntuple['tag'], ntuple['message'])
         #print(ntuple)
         #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
         #print(decoded)
@@ -121,8 +120,8 @@ class UserAgent(CoreAgent):
 
 
 
-    def process_clarification(self, msg, ntuple):
-        self.output_stream(msg)
+    def process_clarification(self, tag, msg, ntuple):
+        self.output_stream(tag, msg)
         #msg = input(msg + "> ")
         new = self.decoder.convert_JSON_to_ntuple(ntuple)
         #print(new)
