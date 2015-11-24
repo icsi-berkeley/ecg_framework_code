@@ -149,6 +149,7 @@ class UtilitySpecializer(DebuggingSpecializer):
             for roles, filler in i.__items__():
                 # Checks: filler is schema, it exists, and it has a temporalitly
                 if filler.typesystem() == "SCHEMA" and filler:# and "temporality" in filler.__dir__():
+                    print(repr(filler))
                     for k, v in filler.__items__():
                         if v.index() == goal.index():
                             final[filler.type()] = filler
