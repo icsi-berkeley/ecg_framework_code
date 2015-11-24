@@ -60,7 +60,6 @@
         "affectedEntity": {"descriptor": "objectDescriptor"},
         "affectedProcess": {"parameters": "affectedProcess"}
     },
-
     "Measure": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "measurement": {"descriptor": "scaleDescriptor"},
