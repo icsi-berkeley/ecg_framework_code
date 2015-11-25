@@ -30,7 +30,8 @@
 # Pyre.set_port() is broken in the current Pyre implementation. If
 # you want to do multiple federations, use e.g.:
 # t = Transport(name, prefix='foo')
-
+#seantrott
+from __future__ import print_function
 import collections
 import datetime
 import inspect
@@ -166,7 +167,8 @@ class Transport():
         # event.
 
         def get_callback(tup, **kw):
-            nonlocal ret, e
+            #nonlocal ret, e #seantrott
+            # py2.7 fix (commented out above)... check later and use SIX
             ret = collections.namedtuple('TransportEnvelope', ['object', 'uuid', 'name', 'ip', 'datetime'])(tup, kw['uuid'], kw['name'], kw['ip'], kw['datetime'])
             # Inform get() that ret is ready to be returned.
             e.set()
@@ -368,6 +370,8 @@ class Transport():
 if __name__ == "__main__":
     myname = sys.argv[1]
     remotename = sys.argv[2]
+
+
 
     t = Transport(myname)
     t.subscribe(remotename, lambda tuple: print('Got', tuple))

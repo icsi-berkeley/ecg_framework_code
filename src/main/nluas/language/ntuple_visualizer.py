@@ -16,7 +16,7 @@ analyzer = Analyzer("http://localhost:8090")
 cs = CoreSpecializer(analyzer)
 
 while True:
-	text = input("> ")
+	text = raw_input("> ")
 	if text == "q":
 		quit()
 	elif text == "d":

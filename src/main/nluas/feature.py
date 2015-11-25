@@ -64,6 +64,10 @@ class Feature(object):
         ff = self.__features__
         return ff[self.__index__]
 
+
+    def __nonzero__(self):
+        return self.__bool__()
+
     def __bool__(self):
         if self.__index__ in self.__features__:
             return True

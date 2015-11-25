@@ -7,9 +7,11 @@ from nluas.language.core_specializer import *
 from nluas.core_agent import *
 from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
-from nluas.language.spell_checker import *
+#from nluas.language.spell_checker import *
 import sys, traceback, time
 import json
+# python2.7
+from socket import error as socket_error
 
 class WaitingException(Exception):
     def __init__(self, message):
@@ -36,6 +38,7 @@ class UserAgent(CoreAgent):
     def initialize_UI(self):
         #args = self.ui_parser.parse_known_args(self.unknown)
         #self.analyzer_port = args[0].port
+        time.sleep(3)
         self.analyzer_port = "http://localhost:8090"
         connected, printed = False, False
         while not connected:
@@ -43,14 +46,14 @@ class UserAgent(CoreAgent):
                 self.initialize_analyzer()
                 self.initialize_specializer()
                 connected = True
-            except ConnectionRefusedError as e:
+            except Exception as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
                     self.output_stream(self.name, message)
                     printed = True
-                time.sleep(1)
+                time.sleep(3)
         self.decoder = NtupleDecoder()
-        self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
+        #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
     def initialize_analyzer(self):
         self.analyzer = Analyzer(self.analyzer_port)
@@ -70,7 +73,7 @@ class UserAgent(CoreAgent):
                     self.transport.send(self.solve_destination, json_ntuple)
                     break
                 except Exception as e:
-                    self.output_stream(e)
+                    self.output_stream(self.name, e)
                     traceback.print_exc()
         except Exception as e:
             print(e)
@@ -106,7 +109,8 @@ class UserAgent(CoreAgent):
     def prompt(self):
         while True:
             specialize = True
-            msg = input("> ")
+            # Changed for py2.7
+            msg = raw_input("> ")
             if msg == "q":
                 self.transport.quit_federation()
                 quit()

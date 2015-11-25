@@ -145,7 +145,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 return method(eventProcess)
             elif "descriptor" in value:
                 method = getattr(self, "get_{}".format(value["descriptor"]))
-                if hasattr(eventProcess, key) and getattr(eventProcess, key):
+                if hasattr(eventProcess, key) and getattr(eventProcess, key).__bool__():
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
                     # HACK: 
@@ -229,9 +229,9 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
     def get_spgValue(self, spg, valueType):
         final = {}
         value = getattr(spg, valueType)
-        #goal = spg.goal
+        
         if value.ontological_category.type() == "location":
-            return {'location': (int(value.xCoord), int(value.xCoord))}
+            return {'location': (float(value.xCoord), float(value.xCoord))}
         if value.index() == spg.landmark.index():
             return {'objectDescriptor': self.get_objectDescriptor(value)}
         if value.type() == "RD":
