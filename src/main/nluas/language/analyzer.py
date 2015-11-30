@@ -189,6 +189,7 @@ def main(args):
     start = time.time()
     analyzer = Analyzer(args[1])
     end = time.time()
+    print("Analyzer ready...")
     #usage_time(start, end, analyzer)
     try:
         #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
