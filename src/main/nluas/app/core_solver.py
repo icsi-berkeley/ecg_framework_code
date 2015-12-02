@@ -80,7 +80,6 @@ class CoreProblemSolver(CoreAgent):
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
                 self.broadcast()
-                self.update_world()
             except AttributeError as e:
                 traceback.print_exc()
                 message = "I cannot solve a(n) {}.".format(predicate_type)
