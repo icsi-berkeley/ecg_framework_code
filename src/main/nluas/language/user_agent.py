@@ -112,7 +112,7 @@ class UserAgent(CoreAgent):
                 quit()
             elif msg == None or msg == "":
                 specialize = False
-            elif msg.lower()[0] == 'd':
+            elif msg.lower() == 'd':
                 self.specializer.set_debug()
                 specialize = False
             elif specialize:
