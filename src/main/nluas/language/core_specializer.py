@@ -169,7 +169,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return final_value
 
     def get_scaleDescriptor(self, scale):
-        return {'units': scale.units.type(), 'value': float(scale.amount.value)}
+        return {'units': scale.units.type(), 'value': float(scale.amount.value), 'property': scale.property.type()}
 
     def get_property(self, pm):
         returned = {}
@@ -200,18 +200,22 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         predication['negated'] = False
         if self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
             predication = self.get_property(state)
-            if self.protagonist and "property" in self.protagonist['objectDescriptor']:
-                prop1, prop2  = predication['property'], self.protagonist['objectDescriptor']['property']['objectDescriptor']['type']
-                if not self.is_compatible('ONTOLOGY', prop1, prop2):
-                    raise Exception("Problem with analysis: the predication '{}' is not compatible with '{}'".format(prop1, prop2))
+            self.check_compatibility(predication)
         elif self.analyzer.issubtype("SCHEMA", state.type(), "QuantifiedRD"):
             predication['amount'] = self.get_scaleDescriptor(state)
+            self.check_compatibility(predication['amount'])
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
             predication['relation']= self.get_locationDescriptor(state.profiledArea) 
             predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
         elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
             predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
         return predication
+
+    def check_compatibility(self, predication):
+        if self.protagonist and "property" in self.protagonist['objectDescriptor']:
+            prop1, prop2  = predication['property'], self.protagonist['objectDescriptor']['property']['objectDescriptor']['type']
+            if not self.is_compatible('ONTOLOGY', prop1, prop2):
+                raise Exception("Problem with analysis: the predication '{}' is not compatible with '{}'".format(prop1, prop2))
 
     def get_spgDescriptor(self, spg):
         descriptor = self.descriptor_templates['spgDescriptor']
