@@ -288,6 +288,9 @@ class Struct(object):
     def __json__(self):
         return self.__dict__
 
+    def update(self, dictionary):
+        self.__dict__.update(dictionary)
+
 
 
 def update(x, *maps, **entries):
