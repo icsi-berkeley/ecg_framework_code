@@ -60,10 +60,11 @@
         "affectedEntity": {"descriptor": "objectDescriptor"},
         "affectedProcess": {"parameters": "affectedProcess"}
     },
-    "Measure": {
+    "MeasurePredication": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "measurement": {"descriptor": "scaleDescriptor"},
         "p_features": {"descriptor": "processFeatures"},
+        "state": {"method": "get_state"},
         "dimension": "dimension",
         "actionary": "actionary"
     },
@@ -92,5 +93,5 @@
         "actionary": "actionary",
         "p_features": {"descriptor": "processFeatures"}
     }
-    } 
+    }
 }
