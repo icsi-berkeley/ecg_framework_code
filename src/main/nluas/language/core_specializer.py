@@ -39,6 +39,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #self.read_templates
 
     def initialize_templates(self):
+        print(path+"parameter_templates.json")
         self.parameter_templates = self.read_templates(path+"parameter_templates.json")
         self.mood_templates = self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = self.read_templates(path+"descriptors.json")
