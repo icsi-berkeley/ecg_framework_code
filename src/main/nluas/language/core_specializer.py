@@ -148,7 +148,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 if hasattr(eventProcess, key) and getattr(eventProcess, key):
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
-                    # HACK: 
+                    # HACK:
                     if value['descriptor'] == "objectDescriptor":# and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
                         self._stacked.append(descriptor)
                     if key == "protagonist":
@@ -205,7 +205,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             predication['amount'] = self.get_scaleDescriptor(state)
             self.check_compatibility(predication['amount'])
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
-            predication['relation']= self.get_locationDescriptor(state.profiledArea) 
+            predication['relation']= self.get_locationDescriptor(state.profiledArea)
             predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
         elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
             predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
@@ -290,7 +290,13 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                     filler = self.fill_pointer(mod, item)
                     if filler:
                         returned.update(filler)
+                        if "property" in filler:
+                            if self.protagonist is not None:
+                                if not hasattr(self.protagonist["objectDescriptor"], "type"):
+                                    self.protagonist["objectDescriptor"].update(
+                                        filler["property"]["objectDescriptor"])
         return returned
+
 
     def get_eventRDDescriptor(self, item):
         # TODO: Event/entity resolution?
@@ -334,8 +340,8 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 
 
     def get_processDescriptor(self, process, referent):
-        """ Retrieves information about a process, according to existing templates. Meant to be implemented 
-        in specific extensions of this interface. 
+        """ Retrieves information about a process, according to existing templates. Meant to be implemented
+        in specific extensions of this interface.
 
         Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
         """
@@ -355,9 +361,3 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
 #parse = analyzer.parse("Robot1, move north then move south then move west!")[0]
 #parse = analyzer.parse("Robot1, move north then move south!")[0]
 #parse = analyzer.parse("he moved to the box.")[0]
-
-
-
-
-
-
