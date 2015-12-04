@@ -41,7 +41,7 @@ def updated(d, *maps, **entries):
 
 # This just defines the interface
 class NullSpecializer(object):
-    def specialize(self, fs): 
+    def specialize(self, fs):
         """Specialize fs into task-specific structures.
         """
         abstract  # @UndefinedVariable
@@ -55,7 +55,7 @@ class DebuggingSpecializer(NullSpecializer):
 
     """ Sets debug_mode to ON/OFF """
     def set_debug(self):
-        self.debug_mode = not self.debug_mode 
+        self.debug_mode = not self.debug_mode
 
 
 class ReferentResolutionException(Exception):
@@ -134,14 +134,14 @@ class UtilitySpecializer(DebuggingSpecializer):
                         elif i.m.type() == "SPG":
                             return 'into'
                 elif filler.type() == "NEAR_Locative":
-                    if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index(): 
-                        location = 'near'    
-                        #location['relation'] = 'near' 
+                    if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index():
+                        location = 'near'
+                        #location['relation'] = 'near'
                 elif filler.type() == "AT_Locative":
                     if filler.p.proximalArea.index() == goal.index():
-                        location = 'at' 
-                        #location['relation'] = 'at'    
-        return location 
+                        location = 'at'
+                        #location['relation'] = 'at'
+        return location
 
     def invert_pointers(self, goal):
         final = {}
@@ -160,7 +160,7 @@ class UtilitySpecializer(DebuggingSpecializer):
 
 
 
-    """Depth-first search of sentence to collect values matching object (GOAL). 
+    """Depth-first search of sentence to collect values matching object (GOAL).
     Now just iterates through feature struct values (due to change in FS structure). Returns a dictionary
     of object type, properties, and trajector landmarks.
     """
@@ -194,7 +194,7 @@ class UtilitySpecializer(DebuggingSpecializer):
                             returned['negated'] = False
                             if "negated" in filler.__dir__() and filler.negated.type() == "yes":
                                 returned['negated'] = True
-                            v = filler.value.type()   
+                            v = filler.value.type()
                             if v == "scalarValue":
                                 returned[str(filler.property.type())] = float(filler.value)
                             #if v in self.mappings:
@@ -209,27 +209,27 @@ class UtilitySpecializer(DebuggingSpecializer):
                             l = self.get_objectDescriptor(filler.landmark)
                             relation = self.get_locationDescriptor(filler.profiledArea)
                             locationDescriptor = {'objectDescriptor': l, 'relation': relation}
-                            returned['locationDescriptor'] = locationDescriptor  
+                            returned['locationDescriptor'] = locationDescriptor
 
                     #if filler.type() == "EventDescriptor" and (filler.modifiedThing and filler.modifiedThing.index() == goal.index()):
-                    #    print(filler.eventProcess.type()  
+                    #    print(filler.eventProcess.type()
                     if filler.type() == "EventDescriptor" and hasattr(filler, "modifiedThing"):
                         if (filler.modifiedThing.index() == goal.index()) and self.event:
                             self.event = False
-                            returned['processDescriptor'] = self.get_processDescriptor(filler.eventProcess, goal)  
-                            self.event = True                       
-        return returned   
+                            returned['processDescriptor'] = self.get_processDescriptor(filler.eventProcess, goal)
+                            self.event = True
+        return returned
 
     def get_processDescriptor(self, process, referent):
-        """ Retrieves information about a process, according to existing templates. Meant to be implemented 
-        in specific extensions of this interface. 
+        """ Retrieves information about a process, according to existing templates. Meant to be implemented
+        in specific extensions of this interface.
 
         Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
         """
         return list(self.params_for_compound(process))
 
     """ Meant to match 'one-anaphora' with the antecedent. As in, "move to the big red box, then move to another one". Or,
-    'He likes the painting by Picasso, and I like the one by Dali.' Not yet entirely clear what information to encode 
+    'He likes the painting by Picasso, and I like the one by Dali.' Not yet entirely clear what information to encode
     besides object type. """
     def resolve_anaphoricOne(self, item):
         popper = list(self._stacked)
@@ -238,7 +238,7 @@ class UtilitySpecializer(DebuggingSpecializer):
             while ('location' in ref or 'locationDescriptor' in ref or 'referent' in ref['objectDescriptor']) and len(popper) > 0:
                 ref = popper.pop()
             if item.givenness.type() == 'distinct':
-                return {'objectDescriptor': {'type': ref['objectDescriptor']['type'], 'givenness': 'distinct'}} 
+                return {'objectDescriptor': {'type': ref['objectDescriptor']['type'], 'givenness': 'distinct'}}
             else:
                 test = self.get_objectDescriptor(item, resolving=True)
                 merged = self.merge_descriptors(ref['objectDescriptor'], test)
@@ -257,7 +257,7 @@ class UtilitySpecializer(DebuggingSpecializer):
             if not key in new:
                 new[key] = old[key]
         return new
-        
+
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
     antecedents. """
     def resolve_referents(self, actionary=None, pred=None):
@@ -295,7 +295,7 @@ class UtilitySpecializer(DebuggingSpecializer):
                     return self.analyzer.issubtype('ONTOLOGY', popped['objectDescriptor']['type'], 'moveable')
                 return False
         # If no actionary passed in, no need to check for context
-        return True      
+        return True
 
     def replace_mappings(self, ntuple):
         """ This is supposed to replace all of the mappings in the ntuple with values from the action ontology, if applicable. """
@@ -336,9 +336,9 @@ class UtilitySpecializer(DebuggingSpecializer):
 class TemplateSpecializer(NullSpecializer):
     def __init__(self):
 
-        self._wrapper = dict(predicate_type=None,             
-                              parameters=None, # one of (_execute, _query)                         
-                              return_type='error_descriptor') 
+        self._wrapper = dict(predicate_type=None,
+                              parameters=None, # one of (_execute, _query)
+                              return_type='error_descriptor')
 
         self._general = dict(kind="unknown",
                              action=None,
@@ -350,7 +350,7 @@ class TemplateSpecializer(NullSpecializer):
                              action=None,
                              protagonist=None,
                              predication=None,
-                             p_features=None)    
+                             p_features=None)
 
 
         self._WH = dict(kind = 'query',
@@ -370,7 +370,7 @@ class TemplateSpecializer(NullSpecializer):
 
         # Basic executable dictionary
         self._execute = dict(kind='execute',
-                             control_state='ongoing', 
+                             control_state='ongoing',
                              action=None,
                              protagonist=None,
                              #distance=Struct(value=4, units='square'),
@@ -409,7 +409,7 @@ class RobotTemplateSpecializer(TemplateSpecializer):
         """
         # Basic executable dictionary
         self._execute = dict(kind='execute',
-                             control_state='ongoing', 
+                             control_state='ongoing',
                              action=None,
                              protagonist=None,
                              distance={"value": .5, "units":'square'},
@@ -419,15 +419,3 @@ class RobotTemplateSpecializer(TemplateSpecializer):
                              direction=None,
                              collaborative=False)
         """
-
-
-
-
-
-
- 
-
-
-
-
-
