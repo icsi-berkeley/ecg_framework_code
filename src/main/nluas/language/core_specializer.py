@@ -39,7 +39,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #self.read_templates
 
     def initialize_templates(self):
-        print(path+"parameter_templates.json")
         self.parameter_templates = self.read_templates(path+"parameter_templates.json")
         self.mood_templates = self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = self.read_templates(path+"descriptors.json")
@@ -213,7 +212,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return predication
 
     def check_compatibility(self, predication):
-        print(predication)
         if self.protagonist and "property" in self.protagonist['objectDescriptor']:
             prop1, prop2  = predication['property'], self.protagonist['objectDescriptor']['property']['objectDescriptor']['type']
             if not self.is_compatible('ONTOLOGY', prop1, prop2):
@@ -285,6 +283,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 if attribute:
                     returned[k] = attribute
         for pointer, mod in item.pointers.items():
+            print(pointer)
             # TODO: check if it's a subcase as well? or don't do this
             if pointer in template['pointers']:
                 filler = self.fill_pointer(mod, item)
