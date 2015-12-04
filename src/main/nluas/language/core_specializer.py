@@ -20,12 +20,11 @@ import time
 path = os.getcwd() + "/src/main/nluas/"
 
 
-class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
+class CoreSpecializer(UtilitySpecializer):
 
     def __init__(self, analyzer):
 
         UtilitySpecializer.__init__(self, analyzer)
-        TemplateSpecializer.__init__(self)
         self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
         self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = OrderedDict()
@@ -286,7 +285,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
             # TODO: check if it's a subcase as well? or don't do this
             if pointer in template['pointers']:
                 for mod in mods:
-                    print(mod.type())
                     filler = self.fill_pointer(mod, item)
                     if filler:
                         returned.update(filler)
