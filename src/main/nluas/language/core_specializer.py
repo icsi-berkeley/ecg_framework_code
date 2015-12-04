@@ -282,12 +282,14 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                 attribute = getattr(item, v).type()
                 if attribute:
                     returned[k] = attribute
-        for pointer, mod in item.pointers.items():
+        for pointer, mods in item.pointers.items():
             # TODO: check if it's a subcase as well? or don't do this
             if pointer in template['pointers']:
-                filler = self.fill_pointer(mod, item)
-                if filler:
-                    returned.update(filler)
+                for mod in mods:
+                    print(mod.type())
+                    filler = self.fill_pointer(mod, item)
+                    if filler:
+                        returned.update(filler)
         return returned
 
     def get_eventRDDescriptor(self, item):
