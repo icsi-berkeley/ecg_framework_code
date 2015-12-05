@@ -282,7 +282,6 @@ class CoreSpecializer(UtilitySpecializer):
                 if attribute:
                     returned[k] = attribute
         for pointer, mods in item.pointers.items():
-            # TODO: check if it's a subcase as well? or don't do this
             if pointer in template['pointers']:
                 for mod in mods:
                     filler = self.fill_pointer(mod, item)
