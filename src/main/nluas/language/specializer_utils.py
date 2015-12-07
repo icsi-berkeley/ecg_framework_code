@@ -143,16 +143,20 @@ class UtilitySpecializer(DebuggingSpecializer):
                         #location['relation'] = 'at'    
         return location 
 
+
     def invert_pointers(self, goal):
         final = {}
         for i in goal.__features__.values():
             for roles, filler in i.__items__():
                 # Checks: filler is schema, it exists, and it has a temporalitly
-                if filler.typesystem() == "SCHEMA" and filler.__bool__():# and "temporality" in filler.__dir__():
+                if filler.typesystem() == "SCHEMA" and filler:
                     for k, v in filler.__items__():
                         if v.index() == goal.index():
-                            final[filler.type()] = filler
+                            if filler.type() not in final:
+                                final[filler.type()] = []
+                            final[filler.type()].append(filler)
         return final
+
 
 
 
