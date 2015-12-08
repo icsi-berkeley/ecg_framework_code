@@ -80,7 +80,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         #else:
         #parameters = self.fill_parameters(eventProcess)
         #ntuple['parameters'] = [parameters]
-        if ['eventProcess'] in ntuple['eventDescriptor']:
+        if 'eventProcess' in ntuple['eventDescriptor']:
             parameters = ntuple['eventDescriptor']['eventProcess']
             if mood == "wh_question":
                 ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
