@@ -150,7 +150,7 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
                     # HACK: 
-                    if value['descriptor'] == "objectDescriptor":# and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
+                    if value['descriptor'] == "objectDescriptor": # and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
                         self._stacked.append(descriptor)
                     if key == "protagonist":
                         self.protagonist = descriptor
@@ -269,11 +269,6 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
         return final
 
     def get_objectDescriptor(self, item, resolving=False):
-        if 'referent' in item.__dir__() and item.referent.type():
-            if item.referent.type() == "antecedent":
-                return self.resolve_referents()['objectDescriptor']
-            elif item.referent.type() == "anaphora" and not resolving:
-                return self.resolve_anaphoricOne(item)['objectDescriptor']
         if "pointers" not in item.__dir__():
             item.pointers = self.invert_pointers(item)
         template = self.descriptor_templates['objectDescriptor']
@@ -294,6 +289,11 @@ class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
                                 if not hasattr(self.protagonist["objectDescriptor"], "type"):
                                     self.protagonist["objectDescriptor"].update(
                                         filler["property"]["objectDescriptor"])
+        if 'referent' in returned: #item.__dir__() and item.referent.type():
+            if returned['referent'] == "antecedent":
+                return self.resolve_referents(returned)['objectDescriptor']
+            elif item.referent.type() == "anaphora" and not resolving:
+                return self.resolve_anaphoricOne(item)['objectDescriptor']
         return returned
 
     def get_eventRDDescriptor(self, item):

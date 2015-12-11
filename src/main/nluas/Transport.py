@@ -30,8 +30,9 @@
 # Pyre.set_port() is broken in the current Pyre implementation. If
 # you want to do multiple federations, use e.g.:
 # t = Transport(name, prefix='foo')
-#seantrott
+
 from __future__ import print_function
+
 import collections
 import datetime
 import inspect
@@ -56,7 +57,7 @@ def is_valid_ip(ipstr):
 
     ip=ipaddress.ip_address(ipstr)
 
-    return ip.is_loopback or ip.is_private or ip in ipaddress.ip_network('192.150.186.0/24')
+    return ip.is_loopback or ip.is_private or ip in ipaddress.ip_network(u'192.150.186.0/24')
 # is_valid_ip()
 
 # Base class for exceptions from a Transport. Should probably also
@@ -155,8 +156,12 @@ class Transport():
         if self._prefix is not None:
             remote = self._prefix + remote
 
-        # The final python namedtuple to be returned gets stored in ret
-        ret = None
+        # The final python namedtuple to be returned needs to be shared
+        # between get_callback() and get(). In python3, you can use
+        # nonlocal, but in python2 you need a trick (storing in a
+        # data structure). The actual value to be returned will
+        # be ret[0].
+        ret = [ None ]
 
         # The event e will get set when a message is read by the
         # readthread.
@@ -167,9 +172,7 @@ class Transport():
         # event.
 
         def get_callback(tup, **kw):
-            #nonlocal ret, e #seantrott
-            # py2.7 fix (commented out above)... check later and use SIX
-            ret = collections.namedtuple('TransportEnvelope', ['object', 'uuid', 'name', 'ip', 'datetime'])(tup, kw['uuid'], kw['name'], kw['ip'], kw['datetime'])
+            ret[0] = collections.namedtuple('TransportEnvelope', ['object', 'uuid', 'name', 'ip', 'datetime'])(tup, kw['uuid'], kw['name'], kw['ip'], kw['datetime'])
             # Inform get() that ret is ready to be returned.
             e.set()
         # get_callback()
@@ -190,7 +193,7 @@ class Transport():
             del self._subscribers[remote]
 
         # Return the namedtuple.
-        return ret
+        return ret[0]
     # get()
 
     def quit_federation(self):
@@ -324,7 +327,7 @@ class Transport():
                 # Everything looks good. Add to list of valid uuids.
                 self._uuid2ip[sid] = ip
             else:
-                raise TransportSecurityError(self, 'Message from invalid IP address in ENTER %s %s %s. Check the function is_valid_ip() in Transport.py.'%(sid, name, url))
+                raise TransportSecurityError(self, 'Message from invalid IP address %s in ENTER %s %s %s. Check the function is_valid_ip() in Transport.py.'%(ip, sid, name, url))
         else:
             raise TransportProtocolError(self, 'Malformed URL in ENTER %s %s %s'%(sid, name, url))
     # _ENTER()
@@ -335,7 +338,9 @@ class Transport():
 
     def _SHOUT(self, sid, name, channel, message):
         now = datetime.datetime.now()
+        logger.debug('In _SHOUT with %s %s %s %s'%(sid, name, channel, message)) #???
         if name in self._subscribers:
+            logger.debug('got a subscription')
             cb = self._subscribers[name]
             self._call_callback(cb, sid, name, channel, message, now)
         if self._subscribe_all is not None:
@@ -370,8 +375,6 @@ class Transport():
 if __name__ == "__main__":
     myname = sys.argv[1]
     remotename = sys.argv[2]
-
-
 
     t = Transport(myname)
     t.subscribe(remotename, lambda tuple: print('Got', tuple))

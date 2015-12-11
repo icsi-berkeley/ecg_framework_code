@@ -156,71 +156,7 @@ class UtilitySpecializer(DebuggingSpecializer):
                                 final[filler.type()] = []
                             final[filler.type()].append(filler)
         return final
-
-
-
-
-
-
-    """Depth-first search of sentence to collect values matching object (GOAL). 
-    Now just iterates through feature struct values (due to change in FS structure). Returns a dictionary
-    of object type, properties, and trajector landmarks.
-    """
-    def get_objectDescriptor(self, goal, resolving=False):
-        if 'referent' in goal.__dir__() and goal.referent.type():
-            if goal.referent.type() == "antecedent":
-                print(self.resolve_referents())
-                return self.resolve_referents()['objectDescriptor']
-            elif goal.referent.type() == "anaphora" and not resolving:
-                return self.resolve_anaphoricOne(goal)['objectDescriptor']
-            #else:
-            #    returned = {'referent': goal.referent.type(), 'type': goal.ontological_category.type()}
-        elif goal.ontological_category.type() == 'location':
-            returned = {'location': (float(goal.xCoord), float(goal.yCoord))}
-        returned = {'type': goal.ontological_category.type()}
-        if "referent" in goal.__dir__():
-            returned['referent'] = goal.referent.type()
-        if 'givenness' in goal.__dir__():
-            returned['givenness'] = goal.givenness.type()
-        if "gender" in goal.__dir__():
-            returned['gender'] = goal.gender.type()
-        if "number" in goal.__dir__():
-            returned['number'] = goal.number.type()
-        if "specificWh" in goal.__dir__():
-            returned['specificWh'] = goal.specificWh.type()
-        for i in goal.__features__.values():
-            for roles, filler in i.__items__():
-                if filler.typesystem() == 'SCHEMA':
-                    if self.analyzer.issubtype('SCHEMA', filler.type(), 'PropertyModifier') and (hasattr(filler, "temporality") and filler.temporality.type() == "atemporal"):
-                        if filler.modifiedThing.index() == goal.index():
-                            returned['negated'] = False
-                            if "negated" in filler.__dir__() and filler.negated.type() == "yes":
-                                returned['negated'] = True
-                            v = filler.value.type()   
-                            if v == "scalarValue":
-                                returned[str(filler.property.type())] = float(filler.value)
-                            #if v in self.mappings:
-                            #    v = self.mappings[v]
-                            else:
-                                returned[str(filler.property.type())] = v
-                            returned['kind'] = str(filler.kind.type())
-                            if filler.type() == "ComparativeAdjModifier":
-                                returned['base'] == self.get_objectDescriptor(filler.base)
-                    elif filler.type() == "TrajectorLandmark" and (hasattr(filler, "temporality") and filler.temporality.type() == "atemporal"):
-                        if filler.trajector.index() == goal.index():
-                            l = self.get_objectDescriptor(filler.landmark)
-                            relation = self.get_locationDescriptor(filler.profiledArea)
-                            locationDescriptor = {'objectDescriptor': l, 'relation': relation}
-                            returned['locationDescriptor'] = locationDescriptor  
-
-                    #if filler.type() == "EventDescriptor" and (filler.modifiedThing and filler.modifiedThing.index() == goal.index()):
-                    #    print(filler.eventProcess.type()  
-                    if filler.type() == "EventDescriptor" and hasattr(filler, "modifiedThing"):
-                        if (filler.modifiedThing.index() == goal.index()) and self.event:
-                            self.event = False
-                            returned['processDescriptor'] = self.get_processDescriptor(filler.eventProcess, goal)  
-                            self.event = True                       
-        return returned   
+ 
 
     def get_processDescriptor(self, process, referent):
         """ Retrieves information about a process, according to existing templates. Meant to be implemented 
@@ -262,15 +198,23 @@ class UtilitySpecializer(DebuggingSpecializer):
         
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
     antecedents. """
-    def resolve_referents(self, actionary=None, pred=None):
+    def resolve_referents(self, item, actionary=None, pred=None):
         popper = list(self._stacked)
         while len(popper) > 0:
             ref = popper.pop()
-            if self.resolves(ref, actionary, pred):
+            if self.resolves(ref, actionary, pred) and self.compatible_referents(item, ref['objectDescriptor']):
                 if 'partDescriptor' in ref:
                     return ref['partDescriptor']
+                print("Referent is: {}".format(str(ref)))
                 return ref
         raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
+
+    def compatible_referents(self, pronoun, ref):
+        for key, value in pronoun.items():
+            if key in ref and key != "referent":
+                if not self.is_compatible("ONTOLOGY", value, ref[key]):
+                    return False
+        return True
 
     """ Returns a boolean on whether or not the "popped" value works in the context provided. """
     def resolves(self, popped, actionary=None, pred=None):
