@@ -234,7 +234,7 @@ class CoreSpecializer(UtilitySpecializer):
         value = getattr(spg, valueType)
         #goal = spg.goal
         if value.ontological_category.type() == "location":
-            return {'location': (int(value.xCoord), int(value.xCoord))}
+            return {'location': (float(value.xCoord), float(value.xCoord))}
         if value.index() == spg.landmark.index():
             return {'objectDescriptor': self.get_objectDescriptor(value)}
         if value.type() == "RD":
