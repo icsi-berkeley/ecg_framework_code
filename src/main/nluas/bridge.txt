@@ -1,0 +1,54 @@
+TL;DR:
+
+If two Transports can't talk to each other, it's probably because
+they're on different subnets. Run one instance of "bridge_client.py"
+on each subnet to get them to communicate.
+
+NOTE: Multiple federations on the same subnets will not currently
+work without a fix from the author of Pyre.
+
+
+DETAILS:
+
+The current design of Transport requires all instances to be on the
+same subnet. A "bridge" allows multiple subnets to be connected and
+act as if they're a single subnet.
+
+The bridge consists of a bridge server and one or more bridge
+clients.
+
+
+Bridge Server
+
+The bridge server must run on a host that's accessible to all clients
+(i.e. a static IP address with an open port). There's a command line
+argument to set the port, which defaults to 7417. You can use any open
+port.
+
+The server is really simple. It just echos everything it receives to
+all clients. Because of this, you should use a different server for
+each federation.
+
+Currently, I have two servers running on Amazon. Both are on
+ec2-54-153-1-22.us-west-1.compute.amazonaws.com. One is on port 7417
+(the default) and the other is on port 8856. I set up the second to
+allow more than one person to debug at the same time.
+
+
+Bridge Clients
+
+You need to run one (and only one) bridge_client.py on each subnet
+that you want to connect. With no command line arguments, it will use
+the default server at ec2-54-153-1-22.us-west-1.compute.amazonaws.com
+on port 7417. Use command line arguments -host and -port to set other
+values for the host and port.
+
+You should start bridge clients BEFORE you start any other Transport
+objects. When you want to quit, calling Transport.quit_federation()
+will also quit the local bridge client. You can also type "quit" into
+the terminal where you started the bridge client, which will cause the
+bridge client to quit but will not quit the federation.
+
+Note that there's a bug in Pyre that makes using multiple federations
+on the same subnet problematic. If we need to do this, I can try to
+fix it myself or try (again) to get the Pyre guy to fix it.
