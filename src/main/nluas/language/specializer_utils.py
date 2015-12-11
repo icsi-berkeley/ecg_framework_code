@@ -149,7 +149,7 @@ class UtilitySpecializer(DebuggingSpecializer):
         for i in goal.__features__.values():
             for roles, filler in i.__items__():
                 # Checks: filler is schema, it exists, and it has a temporalitly
-                if filler.typesystem() == "SCHEMA" and filler:
+                if filler.typesystem() == "SCHEMA" and filler.has_filler():
                     for k, v in filler.__items__():
                         if v.index() == goal.index():
                             if filler.type() not in final:
@@ -205,9 +205,13 @@ class UtilitySpecializer(DebuggingSpecializer):
             if self.resolves(ref, actionary, pred) and self.compatible_referents(item, ref['objectDescriptor']):
                 if 'partDescriptor' in ref:
                     return ref['partDescriptor']
-                print("Referent is: {}".format(str(ref)))
+                ref = self.clean_referent(ref)
                 return ref
         raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
+
+    def clean_referent(self, ref):
+        ref['objectDescriptor'].pop('property', None)
+        return ref
 
     def compatible_referents(self, pronoun, ref):
         for key, value in pronoun.items():
