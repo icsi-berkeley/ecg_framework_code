@@ -79,9 +79,10 @@ class CoreSpecializer(UtilitySpecializer):
         #else:
         #parameters = self.fill_parameters(eventProcess)
         #ntuple['parameters'] = [parameters]
-        parameters = ntuple['eventDescriptor']['eventProcess']
-        if mood == "wh_question":
-            ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
+        if 'eventProcess' in ntuple['eventDescriptor']:
+            parameters = ntuple['eventDescriptor']['eventProcess']
+            if mood == "wh_question":
+                ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
 
         ntuple = self.map_ontologies(ntuple)
 
