@@ -20,7 +20,7 @@ import time
 path = os.getcwd() + "/src/main/nluas/"
 
 
-class CoreSpecializer(TemplateSpecializer, UtilitySpecializer):
+class CoreSpecializer(UtilitySpecializer):
 
     def __init__(self, analyzer):
 
