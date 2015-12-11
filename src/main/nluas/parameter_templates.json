@@ -15,7 +15,7 @@
     "Stasis": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "state": {"method": "get_state"},
-        "negated": false,
+        "negated": "negated",
         "actionary": "actionary",
         "p_features": {"descriptor": "processFeatures"}
     },
