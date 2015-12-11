@@ -165,8 +165,15 @@ class CoreSpecializer(UtilitySpecializer):
             attribute = getattr(eventProcess, key)
             if attribute.type() == "scalarValue":
                 return float(attribute)
+            elif key == "negated":
+                return self.get_negated(attribute.type())
             return attribute.type()
         return final_value
+
+    def get_negated(self, value):
+        if value == "yes":
+            return True
+        return False
 
     def get_scaleDescriptor(self, scale):
         return {'units': scale.units.type(), 'value': float(scale.amount.value), 'property': scale.property.type()}
