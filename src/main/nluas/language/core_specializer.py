@@ -144,7 +144,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return method(eventProcess)
             elif "descriptor" in value:
                 method = getattr(self, "get_{}".format(value["descriptor"]))
-                if hasattr(eventProcess, key) and getattr(eventProcess, key):
+                if hasattr(eventProcess, key) and getattr(eventProcess, key).has_filler():
                     attribute = getattr(eventProcess, key)
                     descriptor = {value['descriptor']: method(attribute)}
                     # HACK:
