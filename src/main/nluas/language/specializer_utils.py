@@ -206,7 +206,8 @@ class UtilitySpecializer(DebuggingSpecializer):
                     return ref['partDescriptor']
                 ref = self.clean_referent(ref)
                 return ref
-        raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
+        return {'objectDescriptor':item}
+        #raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
 
     def clean_referent(self, ref):
         ref['objectDescriptor'].pop('property', None)

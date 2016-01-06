@@ -239,7 +239,6 @@ class CoreSpecializer(UtilitySpecializer):
     def get_spgValue(self, spg, valueType):
         final = {}
         value = getattr(spg, valueType)
-        #goal = spg.goal
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
         if value.index() == spg.landmark.index():
@@ -294,7 +293,7 @@ class CoreSpecializer(UtilitySpecializer):
                                 if not hasattr(self.protagonist["objectDescriptor"], "type"):
                                     self.protagonist["objectDescriptor"].update(
                                         filler["property"]["objectDescriptor"])
-        if 'referent' in returned: #item.__dir__() and item.referent.type():
+        if 'referent' in returned:
             if returned['referent'] == "antecedent":
                 return self.resolve_referents(returned)['objectDescriptor']
             elif item.referent.type() == "anaphora" and not resolving:
