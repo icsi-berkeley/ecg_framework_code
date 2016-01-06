@@ -137,19 +137,18 @@ class CoreSpecializer(UtilitySpecializer):
                 return key
         return None
 
-    def fill_value(self, key, value, eventProcess):
+    def fill_value(self, key, value, input_schema):
         final_value = None
         if isinstance(value, dict):
-            if "method" in value and hasattr(eventProcess, key):
+            if "method" in value and hasattr(input_schema, key):
                 method = getattr(self, value["method"])
-                return method(eventProcess)
+                return method(input_schema)
             elif "descriptor" in value:
                 method = getattr(self, "get_{}".format(value["descriptor"]))
-                if hasattr(eventProcess, key) and getattr(eventProcess, key).has_filler():
-                    attribute = getattr(eventProcess, key)
+                if hasattr(input_schema, key) and getattr(input_schema, key).has_filler():
+                    attribute = getattr(input_schema, key)
                     descriptor = {value['descriptor']: method(attribute)}
-                    # HACK:
-                    if value['descriptor'] == "objectDescriptor":# and not self.analyzer.issubtype("ONTOLOGY", descriptor['objectDescriptor']['type'], "sentient"):
+                    if value['descriptor'] == "objectDescriptor":
                         self._stacked.append(descriptor)
                     if key == "protagonist":
                         self.protagonist = descriptor
@@ -157,12 +156,12 @@ class CoreSpecializer(UtilitySpecializer):
                 if "default" in value:
                     return value['default']
                 return None
-            elif "parameters" in value and hasattr(eventProcess, value['parameters']):
-                return self.fill_parameters(getattr(eventProcess, value['parameters']))
-            elif "eventDescription" in value and hasattr(eventProcess, value['eventDescription']):
-                return self.specialize_event(getattr(eventProcess, value['eventDescription']))
-        elif value and hasattr(eventProcess, key):
-            attribute = getattr(eventProcess, key)
+            elif "parameters" in value and hasattr(input_schema, value['parameters']):
+                return self.fill_parameters(getattr(input_schema, value['parameters']))
+            elif "eventDescription" in value and hasattr(input_schema, value['eventDescription']):
+                return self.specialize_event(getattr(input_schema, value['eventDescription']))
+        elif value and hasattr(input_schema, key):
+            attribute = getattr(input_schema, key) 
             if attribute.type() == "scalarValue":
                 return float(attribute)
             elif key == "negated":
