@@ -74,7 +74,7 @@ import uuid
 from pyre import Pyre
 import zmq
 
-from lcas import Transport
+from nluas import Transport
 
 VERSION = 0.1
 
