@@ -174,7 +174,6 @@ class CoreSpecializer(UtilitySpecializer):
             return True
         return False
 
-
     def get_scaleDescriptor(self, scale):
         return {'units': scale.units.type(), 'value': float(scale.amount.value), 'property': scale.property.type()}
 
@@ -212,7 +211,7 @@ class CoreSpecializer(UtilitySpecializer):
             predication['amount'] = self.get_scaleDescriptor(state)
             self.check_compatibility(predication['amount'])
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
-            predication['relation']= self.get_locationDescriptor(state.profiledArea) 
+            predication['relation']= self.get_locationDescriptor(state.profiledArea)
             predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
         elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
             predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
@@ -240,7 +239,6 @@ class CoreSpecializer(UtilitySpecializer):
     def get_spgValue(self, spg, valueType):
         final = {}
         value = getattr(spg, valueType)
-        
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
         if value.index() == spg.landmark.index():
@@ -302,6 +300,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return self.resolve_anaphoricOne(item)['objectDescriptor']
         return returned
 
+
     def get_eventRDDescriptor(self, item):
         # TODO: Event/entity resolution?
         returned = self.get_objectDescriptor(item)
@@ -344,29 +343,12 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_processDescriptor(self, process, referent):
-        """ Retrieves information about a process, according to existing templates. Meant to be implemented 
-        in specific extensions of this interface. 
+        """ Retrieves information about a process, according to existing templates. Meant to be implemented
+        in specific extensions of this interface.
 
         Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
         """
         return self.fill_parameters(process)
-
-
-
-#analyzer = Analyzer("http://localhost:8090")
-#cs = CoreSpecializer(analyzer)
-
-
-#parse = analyzer.parse("if the box that John sees is big, it is not red.")[0]
-
-#s = cs.specialize(parse)
-
-#parse = analyzer.parse("the box that he saw")[0]
-#parse = analyzer.parse("Robot1, move north then move south then move west!")[0]
-#parse = analyzer.parse("Robot1, move north then move south!")[0]
-#parse = analyzer.parse("he moved to the box.")[0]
-
-
 
 
 

@@ -114,6 +114,9 @@ class Analyzer(object):
     def close(self):
         self.server.shutdown()
 
+    def __json__(self):
+        return self.__dict__
+
 
 def slot_index(slot):
     return slot.slotIndex        
@@ -199,6 +202,7 @@ def main(args):
     except Exception, e:
         print(e)
         #print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
+    
 
 def test_remote(sentence ='Robot1, move to location 1 2!'):
     from feature import as_featurestruct

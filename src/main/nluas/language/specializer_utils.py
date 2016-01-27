@@ -41,7 +41,7 @@ def updated(d, *maps, **entries):
 
 # This just defines the interface
 class NullSpecializer(object):
-    def specialize(self, fs): 
+    def specialize(self, fs):
         """Specialize fs into task-specific structures.
         """
         abstract  # @UndefinedVariable
@@ -55,7 +55,7 @@ class DebuggingSpecializer(NullSpecializer):
 
     """ Sets debug_mode to ON/OFF """
     def set_debug(self):
-        self.debug_mode = not self.debug_mode 
+        self.debug_mode = not self.debug_mode
 
 
 class ReferentResolutionException(Exception):
@@ -134,14 +134,14 @@ class UtilitySpecializer(DebuggingSpecializer):
                         elif i.m.type() == "SPG":
                             return 'into'
                 elif filler.type() == "NEAR_Locative":
-                    if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index(): 
-                        location = 'near'    
-                        #location['relation'] = 'near' 
+                    if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index():
+                        location = 'near'
+                        #location['relation'] = 'near'
                 elif filler.type() == "AT_Locative":
                     if filler.p.proximalArea.index() == goal.index():
-                        location = 'at' 
-                        #location['relation'] = 'at'    
-        return location 
+                        location = 'at'
+                        #location['relation'] = 'at'
+        return location
 
 
     def invert_pointers(self, goal):
@@ -156,18 +156,18 @@ class UtilitySpecializer(DebuggingSpecializer):
                                 final[filler.type()] = []
                             final[filler.type()].append(filler)
         return final
- 
+
 
     def get_processDescriptor(self, process, referent):
-        """ Retrieves information about a process, according to existing templates. Meant to be implemented 
-        in specific extensions of this interface. 
+        """ Retrieves information about a process, according to existing templates. Meant to be implemented
+        in specific extensions of this interface.
 
         Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
         """
         return list(self.params_for_compound(process))
 
     """ Meant to match 'one-anaphora' with the antecedent. As in, "move to the big red box, then move to another one". Or,
-    'He likes the painting by Picasso, and I like the one by Dali.' Not yet entirely clear what information to encode 
+    'He likes the painting by Picasso, and I like the one by Dali.' Not yet entirely clear what information to encode
     besides object type. """
     def resolve_anaphoricOne(self, item):
         popper = list(self._stacked)
@@ -176,7 +176,7 @@ class UtilitySpecializer(DebuggingSpecializer):
             while ('location' in ref or 'locationDescriptor' in ref or 'referent' in ref['objectDescriptor']) and len(popper) > 0:
                 ref = popper.pop()
             if item.givenness.type() == 'distinct':
-                return {'objectDescriptor': {'type': ref['objectDescriptor']['type'], 'givenness': 'distinct'}} 
+                return {'objectDescriptor': {'type': ref['objectDescriptor']['type'], 'givenness': 'distinct'}}
             else:
                 test = self.get_objectDescriptor(item, resolving=True)
                 merged = self.merge_descriptors(ref['objectDescriptor'], test)
@@ -195,7 +195,7 @@ class UtilitySpecializer(DebuggingSpecializer):
             if not key in new:
                 new[key] = old[key]
         return new
-        
+
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
     antecedents. """
     def resolve_referents(self, item, actionary=None, pred=None):
@@ -207,7 +207,8 @@ class UtilitySpecializer(DebuggingSpecializer):
                     return ref['partDescriptor']
                 ref = self.clean_referent(ref)
                 return ref
-        return {'objectDescriptor':item} #raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
+        return {'objectDescriptor':item}
+
 
     def clean_referent(self, ref):
         ref['objectDescriptor'].pop('property', None)
@@ -245,7 +246,7 @@ class UtilitySpecializer(DebuggingSpecializer):
                     return self.analyzer.issubtype('ONTOLOGY', popped['objectDescriptor']['type'], 'moveable')
                 return False
         # If no actionary passed in, no need to check for context
-        return True      
+        return True
 
     def replace_mappings(self, ntuple):
         """ This is supposed to replace all of the mappings in the ntuple with values from the action ontology, if applicable. """
@@ -280,14 +281,5 @@ class UtilitySpecializer(DebuggingSpecializer):
                 n[k] = self.mappings[v]
                 v = self.mappings[v]
         return n
-
-
-
-
-
- 
-
-
-
 
 
