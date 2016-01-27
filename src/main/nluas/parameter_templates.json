@@ -7,7 +7,7 @@
         "actionary": "actionary",
         "collaborative": null,
         "heading": "heading",
-        "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0}}},
+        "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0, "property": "distance"}}},
         "spg": {"descriptor": "spgDescriptor"},
         "direction": "direction",
         "speed": 0.5
@@ -15,9 +15,17 @@
     "Stasis": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "state": {"method": "get_state"},
-        "negated": false,
         "actionary": "actionary",
         "p_features": {"descriptor": "processFeatures"}
+    },
+    "Quantity": {
+        "units": "units",
+        "property": "property",
+        "amount": {"parameters": "amount"}
+    },
+    "QuantitySchema": {
+        "value": 0.5,
+        "number": "number"
     },
     "ForceApplication": {
         "protagonist": {"descriptor": "objectDescriptor"},
@@ -74,12 +82,14 @@
         "actionary": "actionary",
         "causalProcess": {"parameters": "process1"},
         "affectedProcess": {"parameters": "process2"},
-        "complexKind": "complexKind"
+        "complexKind": "complexKind",
+        "p_features": {"descriptor": "processFeatures"}
     },
     "Change": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",
-        "state": {"method": "get_state"}
+        "state": {"method": "get_state"},
+        "direction": "direction"
     },
     "ComplexProcess": {
         "protagonist": {"descriptor": "objectDescriptor"},

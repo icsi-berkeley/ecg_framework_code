@@ -70,7 +70,7 @@ class UserAgent(CoreAgent):
                     self.transport.send(self.solve_destination, json_ntuple)
                     break
                 except Exception as e:
-                    self.output_stream(e)
+                    self.output_stream(self.name, e)
                     traceback.print_exc()
         except Exception as e:
             print(e)

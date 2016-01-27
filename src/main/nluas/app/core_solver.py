@@ -47,6 +47,8 @@ class CoreProblemSolver(CoreAgent):
         self.transport.subscribe(self.ui_address, self.callback)
         self._incapable = "I cannot do that yet."
         self.history = list()
+        self.p_features = None
+        self.eventFeatures=None
 
     def setup_solver_parser(self):
         parser = argparse.ArgumentParser()
@@ -111,9 +113,15 @@ class CoreProblemSolver(CoreAgent):
     def route_event(self, eventDescription, predicate):
         features = eventDescription['e_features']
         if features:
-            efeatures = features['eventFeatures']
+            # Set eventFeatures
+            self.eventFeatures = features['eventFeatures']
         parameters = eventDescription['eventProcess']
-        self.route_action(parameters, predicate)
+        return_value = self.route_action(parameters, predicate)
+        self.eventFeatures = None
+        if return_value:
+            if predicate == "query":
+                #print("Responding via n-tuple...")
+                self.respond_to_query(return_value)
 
 
     def route_action(self, parameters, predicate):
@@ -122,9 +130,12 @@ class CoreProblemSolver(CoreAgent):
         else:
             action = parameters['actionary']
             try:
+                self.p_features = parameters['p_features']['processFeatures']
                 dispatch = getattr(self, "{}_{}".format(predicate, action))
-                dispatch(parameters)
+                return_value = dispatch(parameters)
                 self.history.insert(0, (parameters, True))
+                self.p_features = None
+                return return_value
             except AttributeError as e:
                 traceback.print_exc()
                 message = "I cannot solve the '{}_{}' action".format(predicate,action)

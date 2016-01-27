@@ -7,7 +7,8 @@
     },
     "EventDescriptor": {
     	"eventProcess": {"parameters": "eventProcess"},
-    	"e_features": {"descriptor": "eventFeatures"}
+    	"e_features": {"descriptor": "eventFeatures"},
+    	"profiledParticipant": {"descriptor": "objectDescriptor"}
     }
 }
 }
