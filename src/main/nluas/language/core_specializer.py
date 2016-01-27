@@ -175,6 +175,7 @@ class CoreSpecializer(UtilitySpecializer):
         return False
 
     def get_scaleDescriptor(self, scale):
+        print(repr(scale))
         return {'units': scale.units.type(), 'value': float(scale.amount.value), 'property': scale.property.type()}
 
     def get_property(self, pm):
