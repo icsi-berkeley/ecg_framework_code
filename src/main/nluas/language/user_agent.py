@@ -82,7 +82,7 @@ class UserAgent(CoreAgent):
     def callback(self, ntuple):
         ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
-        if call_type == "failure":
+        if call_type == "id_failure":
             self.output_stream(ntuple['tag'], ntuple['message'])
             #print(ntuple['message'])
         elif call_type == "clarification":
@@ -91,6 +91,8 @@ class UserAgent(CoreAgent):
             self.process_clarification(ntuple['tag'], ntuple['message'], ntuple['ntuple'])
             #print(ntuple['ntuple'])
         elif call_type == "response":
+            self.output_stream(ntuple['tag'], ntuple['message'])
+        elif call_type == "error_descriptor":
             self.output_stream(ntuple['tag'], ntuple['message'])
         #print(ntuple)
         #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
