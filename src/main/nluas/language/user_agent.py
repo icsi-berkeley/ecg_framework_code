@@ -10,8 +10,6 @@ from nluas.ntuple_decoder import NtupleDecoder
 #from nluas.language.spell_checker import *
 import sys, traceback, time
 import json
-# python2.7
-from socket import error as socket_error
 
 class WaitingException(Exception):
     def __init__(self, message):
@@ -38,7 +36,6 @@ class UserAgent(CoreAgent):
     def initialize_UI(self):
         #args = self.ui_parser.parse_known_args(self.unknown)
         #self.analyzer_port = args[0].port
-        time.sleep(3)
         self.analyzer_port = "http://localhost:8090"
         connected, printed = False, False
         while not connected:
@@ -46,12 +43,12 @@ class UserAgent(CoreAgent):
                 self.initialize_analyzer()
                 self.initialize_specializer()
                 connected = True
-            except Exception as e:
+            except ConnectionRefusedError as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
                     self.output_stream(self.name, message)
                     printed = True
-                time.sleep(3)
+                time.sleep(1)
         self.decoder = NtupleDecoder()
         #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
@@ -85,7 +82,7 @@ class UserAgent(CoreAgent):
     def callback(self, ntuple):
         ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
-        if call_type == "failure":
+        if call_type == "id_failure":
             self.output_stream(ntuple['tag'], ntuple['message'])
             #print(ntuple['message'])
         elif call_type == "clarification":
@@ -94,6 +91,8 @@ class UserAgent(CoreAgent):
             self.process_clarification(ntuple['tag'], ntuple['message'], ntuple['ntuple'])
             #print(ntuple['ntuple'])
         elif call_type == "response":
+            self.output_stream(ntuple['tag'], ntuple['message'])
+        elif call_type == "error_descriptor":
             self.output_stream(ntuple['tag'], ntuple['message'])
         #print(ntuple)
         #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
@@ -109,7 +108,6 @@ class UserAgent(CoreAgent):
     def prompt(self):
         while True:
             specialize = True
-            # Changed for py2.7
             msg = raw_input("> ")
             if msg == "q":
                 self.transport.quit_federation()
