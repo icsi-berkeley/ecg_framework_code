@@ -7,7 +7,7 @@ from nluas.language.core_specializer import *
 from nluas.core_agent import *
 from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
-from nluas.language.spell_checker import *
+#from nluas.language.spell_checker import *
 import sys, traceback, time
 import json
 
@@ -50,7 +50,7 @@ class UserAgent(CoreAgent):
                     printed = True
                 time.sleep(1)
         self.decoder = NtupleDecoder()
-        self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
+        #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
     def initialize_analyzer(self):
         self.analyzer = Analyzer(self.analyzer_port)
