@@ -64,11 +64,15 @@ class CoreProblemSolver(CoreAgent):
         self.transport.send(self.ui_address, json.dumps(request))
 
     def identification_failure(self, message):
-        request = {'type': 'failure', 'message': message, 'tag': self.address}
+        request = {'type': 'id_failure', 'message': message, 'tag': self.address}
         self.transport.send(self.ui_address, json.dumps(request))
 
     def respond_to_query(self, message):
         request = {'type': 'response', 'message': message, 'tag': self.address}
+        self.transport.send(self.ui_address, json.dumps(request))
+
+    def return_error_descriptor(self, message):
+        request = {'type': 'error_descriptor', 'message': message, 'tag': self.address}
         self.transport.send(self.ui_address, json.dumps(request))
 
     def solve(self, json_ntuple):
@@ -122,6 +126,8 @@ class CoreProblemSolver(CoreAgent):
             if predicate == "query":
                 #print("Responding via n-tuple...")
                 self.respond_to_query(return_value)
+            elif predicate == "command":
+                self.return_error_descriptor(return_value)
 
 
     def route_action(self, parameters, predicate):
