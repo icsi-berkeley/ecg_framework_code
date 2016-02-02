@@ -35,6 +35,10 @@ class CoreSpecializer(UtilitySpecializer):
         #testing
         self.protagonist = None
 
+        self.negated = {'yes': True,
+                        'no': False,
+                        'boolean': False}
+
         #self.read_templates
 
     def initialize_templates(self):
@@ -100,11 +104,11 @@ class CoreSpecializer(UtilitySpecializer):
                  "what": "class_reference"}
         for k, v in parameters.items():
             if isinstance(v, dict):
-                if ("objectDescriptor" in v and "specificWh" in v['objectDescriptor']):
+                if ("objectDescriptor" in v and "specificWh" in v['objectDescriptor']) and v['objectDescriptor']['specificWh']:
                     number, specificWh = v['objectDescriptor']['number'], v['objectDescriptor']['specificWh']
                     return_type += returns[number] + "::" + returns[specificWh]
                     return return_type, specificWh
-                elif  "eventRDDescriptor" in v and "specificWh" in v['eventRDDescriptor']:
+                elif  "eventRDDescriptor" in v and "specificWh" in v['eventRDDescriptor'] and v['eventRDDescriptor']['specificWh']:
                     number, specificWh = v['eventRDDescriptor']['number'], v['eventRDDescriptor']['specificWh']
                     return_type += returns[number] + "::" + returns[specificWh]
                     return return_type, specificWh
@@ -166,7 +170,12 @@ class CoreSpecializer(UtilitySpecializer):
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
-            return attribute.type()
+            elif attribute.has_filler():
+                return attribute.type()
+            elif str(attribute) != "None":
+                return str(attribute)  # Is this right?
+            else: 
+                return None
         return final_value
 
     def get_negated(self, value):
@@ -179,10 +188,7 @@ class CoreSpecializer(UtilitySpecializer):
 
     def get_property(self, pm):
         returned = {}
-        negated = False
         kind = pm.kind.type()
-        if hasattr(pm, "negated") and pm.negated.type() == "yes":
-            negated = True
         if hasattr(pm, "value"):
             value = pm.value.type()
             if value == "scalarValue":
@@ -196,7 +202,6 @@ class CoreSpecializer(UtilitySpecializer):
                 returned['direction'] = "increase"
             else:
                 returned['direction'] = 'decrease'
-        returned['negated'] = negated
         return returned
 
 
@@ -204,10 +209,16 @@ class CoreSpecializer(UtilitySpecializer):
         predication = {}
         state = eventProcess.state
         predication['negated'] = False
-        if self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
-            predication = self.get_property(state)
+        if hasattr(state, "negated") and state.negated.type():
+            predication['negated'] = self.get_negated(state.negated.type())
+        if self.analyzer.issubtype("SCHEMA", state.type(), "ComparativeAdjModifier"):
+            predication['base'] = self.get_objectDescriptor(state.base)
+            predication.update(self.get_property(state))
+            #predication['ground'] = self.get_objectDescriptor(state.ground)
+        elif self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
+            predication.update(self.get_property(state))
             self.check_compatibility(predication)
-        elif self.analyzer.issubtype("SCHEMA", state.type(), "QuantifiedRD"):
+        elif self.analyzer.issubtype("SCHEMA", state.type(), "RD"):
             predication['amount'] = self.get_scaleDescriptor(state)
             self.check_compatibility(predication['amount'])
         elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
@@ -254,7 +265,11 @@ class CoreSpecializer(UtilitySpecializer):
         final = {}
         for k, v in features.items():
             if k in p_features.__dir__():
-                final[k] = getattr(p_features, v).type()
+                value = getattr(p_features, v).type()
+                if k=="negated":
+                    final[k] = self.get_negated(value)
+                else:
+                    final[k] = value
         return final
 
     def get_eventFeatures(self, e_features):
@@ -264,10 +279,7 @@ class CoreSpecializer(UtilitySpecializer):
             if k in e_features.__dir__():
                 value = getattr(e_features, v).type()
                 if k == "negated":
-                    if value == "yes":
-                        final[k] = True
-                    else:
-                        final[k] = False
+                    final[k] = self.get_negated(value)
                 else:
                     final[k] = value
         return final
@@ -282,6 +294,7 @@ class CoreSpecializer(UtilitySpecializer):
                 attribute = getattr(item, v).type()
                 if attribute:
                     returned[k] = attribute
+        returned.update(self.get_RDExtras(item.extras))
         for pointer, mods in item.pointers.items():
             if pointer in template['pointers']:
                 for mod in mods:
@@ -298,6 +311,16 @@ class CoreSpecializer(UtilitySpecializer):
                 return self.resolve_referents(returned)['objectDescriptor']
             elif item.referent.type() == "anaphora" and not resolving:
                 return self.resolve_anaphoricOne(item)['objectDescriptor']
+        return returned
+
+
+    def get_RDExtras(self, extras):
+        template = self.descriptor_templates['RDExtras']
+        returned = {}
+        for key, value in template.items():
+            #if hasattr(extras, value):
+            final = self.fill_value(key, value, extras)
+            returned[key] = final
         return returned
 
 
@@ -352,4 +375,15 @@ class CoreSpecializer(UtilitySpecializer):
 
 
 
+#analyzer = Analyzer("http://localhost:8090")
+#cs = CoreSpecializer(analyzer)
 
+
+#parse = analyzer.parse("if the box that John sees is big, it is not red.")[0]
+
+#s = cs.specialize(parse)
+
+#parse = analyzer.parse("the box that he saw")[0]
+#parse = analyzer.parse("Robot1, move north then move south then move west!")[0]
+#parse = analyzer.parse("Robot1, move north then move south!")[0]
+#parse = analyzer.parse("he moved to the box.")[0]
