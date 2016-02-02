@@ -170,7 +170,12 @@ class CoreSpecializer(UtilitySpecializer):
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
-            return attribute.type()
+            elif attribute.has_filler():
+                return attribute.type()
+            elif str(attribute) != "None":
+                return str(attribute)  # Is this right?
+            else: 
+                return None
         return final_value
 
     def get_negated(self, value):
