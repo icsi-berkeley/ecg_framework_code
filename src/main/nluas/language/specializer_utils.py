@@ -213,6 +213,15 @@ class UtilitySpecializer(DebuggingSpecializer):
         ref['objectDescriptor'].pop('property', None)
         return ref
 
+    def ordering(self, fs, ref):
+        for index, value in fs.rootconstituent.__features__.items():
+            if hasattr(value, "m") and value.m and value.m.type() == "RD":
+                print(index)
+                #print(repr(value))
+                print(value.m.ontological_category.type())
+                #temp = self.get_objectDescriptor(value.m)
+                #print(temp)
+
     def compatible_referents(self, pronoun, ref):
         for key, value in pronoun.items():
             if key in ref and key != "referent" and (value and ref[key]):
