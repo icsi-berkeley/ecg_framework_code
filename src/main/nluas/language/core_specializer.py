@@ -141,6 +141,9 @@ class CoreSpecializer(UtilitySpecializer):
                 return key
         return None
 
+    def get_headingDescriptor(self, process):
+        return process.heading.type()
+
     def fill_value(self, key, value, input_schema):
         final_value = None
         if isinstance(value, dict):
@@ -170,12 +173,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
-            elif attribute.has_filler():
-                return attribute.type()
-            elif str(attribute) != "None":
-                return str(attribute)  # Is this right?
-            else: 
-                return None
+            return attribute.type()
         return final_value
 
     def get_negated(self, value):
