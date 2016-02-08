@@ -24,6 +24,8 @@ class CoreSpecializer(UtilitySpecializer):
 
     def __init__(self, analyzer):
 
+        self.fs = None
+
         UtilitySpecializer.__init__(self, analyzer)
         self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
         self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
@@ -72,6 +74,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def specialize(self, fs):
+        self.fs = fs
         mood = str(fs.m.mood).replace("-", "_").lower()
         content = fs.m.content
         eventProcess = fs.m.content.eventProcess
