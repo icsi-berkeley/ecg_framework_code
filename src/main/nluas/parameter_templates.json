@@ -6,7 +6,7 @@
         "p_features": {"descriptor": "processFeatures"},
         "actionary": "actionary",
         "collaborative": null,
-        "heading": "heading",
+        "heading": {"descriptor": "headingDescriptor", "default": {"headingDescriptor": "north"}},
         "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0, "property": "distance"}}},
         "spg": {"descriptor": "spgDescriptor"},
         "direction": "direction",
