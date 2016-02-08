@@ -216,7 +216,7 @@ class UtilitySpecializer(DebuggingSpecializer):
 
     def compatible_referents(self, pronoun, ref):
         for key, value in pronoun.items():
-            if key in ref and key != "referent":
+            if key in ref and key != "referent" and value and ref[key]:
                 if not self.is_compatible("ONTOLOGY", value, ref[key]):
                     return False
         return True

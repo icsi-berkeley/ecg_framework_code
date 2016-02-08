@@ -151,6 +151,7 @@ class CoreSpecializer(UtilitySpecializer):
                 method = getattr(self, value["method"])
                 return method(input_schema)
             elif "descriptor" in value:
+                #print(key)
                 method = getattr(self, "get_{}".format(value["descriptor"]))
                 if hasattr(input_schema, key) and getattr(input_schema, key).has_filler():
                     attribute = getattr(input_schema, key)

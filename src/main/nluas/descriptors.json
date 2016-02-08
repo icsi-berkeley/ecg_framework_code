@@ -17,6 +17,11 @@
             "Modification": {"modifier": null}
         }
     },
+    "RDExtras": {
+        "specificWh": "specificWh",
+        "event": {"eventDescription": "event"},
+        "quantity": {"parameters": "quantity"}
+    },
     "spgDescriptor": {
         "goal": null,
         "source": null,
