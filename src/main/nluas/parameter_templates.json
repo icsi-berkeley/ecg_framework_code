@@ -91,6 +91,13 @@
         "state": {"method": "get_state"},
         "direction": "direction"
     },
+    "Creation": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "creator": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "createdThing": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"}
+    },
     "ComplexProcess": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "process1": {"parameters": "process1"},

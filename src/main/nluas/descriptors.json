@@ -14,7 +14,8 @@
             "TrajectorLandmark": {"decriptor": "locationDescriptor"},
             "EventDescriptor": {"descriptor": "processDescriptor"},
             "PartWhole": {"part": {"descriptor": "objectDescriptor"}},
-            "Modification": {"modifier": null}
+            "Modification": {"modifier": null},
+            "RefIdentity": {"second": "objectDescriptor"}
         }
     },
     "RDExtras": {
