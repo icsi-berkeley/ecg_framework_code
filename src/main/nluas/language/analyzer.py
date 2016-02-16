@@ -66,8 +66,10 @@ class Analyzer(object):
     def get_parses(self, sentence):
         try:
             return getParses(sentence, self.analyzer)
-        except ParserException:
-            raise Fault(-1, u'The sentence "%s" has no valid parses.' % sentence)
+        except ParserException, p:
+            print(p.message)
+            raise Fault(-1, p.message)
+
 
     def get_mapping(self):
         v = AP.valueOf("MAPPING_PATH")
