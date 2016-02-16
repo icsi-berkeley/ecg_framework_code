@@ -322,7 +322,8 @@ class CoreSpecializer(UtilitySpecializer):
         for key, value in template.items():
             #if hasattr(extras, value):
             final = self.fill_value(key, value, extras)
-            returned[key] = final
+            if final:
+                returned[key] = final
         return returned
 
 
@@ -363,8 +364,12 @@ class CoreSpecializer(UtilitySpecializer):
                 process= {'processDescriptor': self.get_processDescriptor(pointer.eventProcess, item)}
                 self.event = True
                 return process
-            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Modification"):# and pointer.modifier.type() == "RD":
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Modification") and pointer.modifier.has_filler():
                 return dict(property=dict(objectDescriptor=self.get_objectDescriptor(pointer.modifier)))
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "RefIdentity") and pointer.second.index() != item.index():
+                return dict(identical=dict(objectDescriptor=self.get_objectDescriptor(pointer.second)))
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "PartWhole") and item.index() != pointer.whole.index():
+                return dict(whole=dict(objectDescriptor=self.get_objectDescriptor(pointer.whole)))
 
 
     def get_processDescriptor(self, process, referent):
