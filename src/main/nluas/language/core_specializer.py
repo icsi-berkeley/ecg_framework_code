@@ -296,7 +296,8 @@ class CoreSpecializer(UtilitySpecializer):
                 attribute = getattr(item, v).type()
                 if attribute:
                     returned[k] = attribute
-        returned.update(self.get_RDExtras(item.extras))
+        if hasattr(item, "extras"):
+            returned.update(self.get_RDExtras(item.extras))
         for pointer, mods in item.pointers.items():
             if pointer in template['pointers']:
                 for mod in mods:
