@@ -132,9 +132,9 @@ class CoreProblemSolver(CoreAgent):
 
     def route_action(self, parameters, predicate):
         if "complexKind" in parameters and parameters['complexKind'] == "serial":
-            self.solve_serial(parameters, predicate)
+            return self.solve_serial(parameters, predicate)
         elif "complexKind" in parameters and parameters['complexKind'] == "causal":
-            self.solve_causal(parameters, predicate)
+            return self.solve_causal(parameters, predicate)
         else:
             action = parameters['actionary']
             try:
@@ -153,7 +153,10 @@ class CoreProblemSolver(CoreAgent):
     def close(self):
         return
 
-    def solve_serial(self, parameters):
+    def solve_serial(self, parameters, predicate):
+        print(parameters)
+
+    def solve_serial(self, parameters, predicate):
         print(parameters)
 
     def check_for_clarification(self, ntuple):
