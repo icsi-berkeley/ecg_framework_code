@@ -143,7 +143,6 @@ class CoreProblemSolver(CoreAgent):
                 return_value = dispatch(parameters)
                 self.history.insert(0, (parameters, True))
                 self.p_features = None
-                print(return_value)
                 return return_value
             except AttributeError as e:
                 traceback.print_exc()
