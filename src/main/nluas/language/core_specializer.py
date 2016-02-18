@@ -4,11 +4,12 @@ module author: Sean Trott <seantrott@icsi.berkeley.edu>
 The Core Specializer performs some basic operations in converting a SemSpec to an n-tuple.
 
 Crucial to its design is the notion of templates, which contain specifications for filling in the n-tuple.
-Templates should be defined declaratively.
+Templates should be defined declaratively; the definitions in the template provide instructions
+to the Specializer for how to fill in each value.
 
 See notes on individual methods for more details, as well as documentation here:
 * https://embodiedconstructiongrammar.wordpress.com/2016/02/12/core-specializer-draft
-* 
+
 
 The crucial interface methods include:
 * specialize(self, fs)
@@ -35,16 +36,12 @@ class CoreSpecializer(UtilitySpecializer):
     def __init__(self, analyzer):
 
         self.fs = None
-
         UtilitySpecializer.__init__(self, analyzer)
         self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
         self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = OrderedDict()
-        #self.wrapper_templates = self.read_templates(path+"templates.json")
         self.initialize_templates()
 
-
-        #testing
         self.protagonist = None
 
         self.negated = {'yes': True,
@@ -54,12 +51,14 @@ class CoreSpecializer(UtilitySpecializer):
         #self.read_templates
 
     def initialize_templates(self):
+        """ Initializes templates from path, set above. """
         self.parameter_templates = self.read_templates(path+"parameter_templates.json")
         self.mood_templates = self.read_templates(path+"mood_templates.json")
         self.descriptor_templates = self.read_templates(path+"descriptors.json")
         self.event_templates = self.read_templates(path + "event_templates.json")
 
     def read_templates(self, filename):
+        """ Sets each template to ordered dict."""
         #print("Parsing " + filename)
         base = OrderedDict()
         with open(filename, "r") as data_file:
@@ -72,6 +71,8 @@ class CoreSpecializer(UtilitySpecializer):
         return base
 
     def specialize_event(self, content):
+        """ Takes in an EventDescriptor, and uses event_templates to drive specialization. 
+        Calls fill_value for each item in the corresponding event template. """
         ed = content.type()
         if ed in self.event_templates:
             template = self.event_templates[ed]
@@ -84,6 +85,11 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def specialize(self, fs):
+        """ Takes in a FeatureStruct (fs), produces an ntuple. 
+        Currently requires that the FS be a discourse utterance with a mood ("Declarative", etc.),
+        and an associated EventDescriptor. However, this could be generalized to route
+        specialized n-tuples for other types of input, like an NP.
+        """
         self.fs = fs
         mood = str(fs.m.mood).replace("-", "_").lower()
         content = fs.m.content
@@ -109,6 +115,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_return_type(self, parameters):
+        """ If sentence is a wh-sentence, returns the corresponding return_type. """
         return_type, specificWh = "", ""
         returns = {'plural': "collection_of",
                  "singular": "singleton",
@@ -129,11 +136,13 @@ class CoreSpecializer(UtilitySpecializer):
                     r, w = self.get_return_type(v)
                     if r != "" and w != "":
                         return r, w
-
         return return_type, specificWh
 
 
     def fill_parameters(self, eventProcess):
+        """ Identifies the corresponding parameter template ("MotionPath", etc.). 
+        If none are found, it chooses a parent template ("Motion", "Process", etc.).
+        For each item in the template, it calls fill_value. """
         process = eventProcess.type()
         if process in self.parameter_templates:
             template = self.parameter_templates[process]
@@ -149,6 +158,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def check_parameter_subtypes(self, process, templates):
+        """ Finds the parent type of the input process among the template list. """
         for key in templates:
             if self.analyzer.issubtype("SCHEMA", process, key):
                 return key
@@ -156,9 +166,18 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_headingDescriptor(self, process):
+        """ Returns a heading for a headingDescriptor. Could be more complex depending on domain,
+        in which case the method would be overridden. """
         return process.heading.type()
 
     def fill_value(self, key, value, input_schema):
+        """ Most important specializer method. Takes in a skeleton key,value pairing from a template,
+        as well as the relevant schema ("MotionPath", etc.), and returns the relevant value.
+        If the value is a dictionary, it might be a "descriptor", so it returns an objectDescriptor, etc.
+        A dictionary value could also indicate an embedded process, in which case fill_parameters is called.
+        Also calls specialize_event for embedded EventDescriptors.
+        Otherwise, it gets the filler for the value from the schema ("actionary": @move), and returns this.
+        """
         final_value = None
         if isinstance(value, dict):
             if "method" in value and hasattr(input_schema, key):
@@ -191,14 +210,17 @@ class CoreSpecializer(UtilitySpecializer):
         return final_value
 
     def get_negated(self, value):
+        """ Returns actual boolean for grammar fillers for negation, "yes"/"no". """
         if value == "yes":
             return True
         return False
 
     def get_scaleDescriptor(self, scale):
+        """ Returns a scaleDescriptor, with unit type, the actual value, and the associated property. """
         return {'units': scale.extras.quantity.units.type(), 'value': float(scale.extras.quantity.amount.value), 'property': scale.extras.quantity.property.type()}
 
     def get_property(self, pm):
+        """ Returns the relevant property values for a PropertyModifier. """
         returned = {}
         kind = pm.kind.type()
         if hasattr(pm, "value"):
@@ -218,6 +240,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_state(self, eventProcess):
+        """ Returns the state for a Stasis Process. """
         predication = {}
         state = eventProcess.state
         predication['negated'] = False
@@ -241,12 +264,14 @@ class CoreSpecializer(UtilitySpecializer):
         return predication
 
     def check_compatibility(self, predication):
+        """ Checks that a protagonist is compatible with some predication, e.g. "the weight of the box is 2 pounds / red*". """
         if self.protagonist and "property" in self.protagonist['objectDescriptor']:
             prop1, prop2  = predication['property'], self.protagonist['objectDescriptor']['property']['objectDescriptor']['type']
             if not self.is_compatible('ONTOLOGY', prop1, prop2):
                 raise Exception("Problem with analysis: the predication '{}' is not compatible with '{}'".format(prop1, prop2))
 
     def get_spgDescriptor(self, spg):
+        """ Returns spgDescriptor, with fillers for source, path, and goal. """
         descriptor = self.descriptor_templates['spgDescriptor']
         final = {'goal': None,
                  'source': None,
@@ -260,6 +285,7 @@ class CoreSpecializer(UtilitySpecializer):
         return final
 
     def get_spgValue(self, spg, valueType):
+        """ returns actual SPG value. """
         final = {}
         value = getattr(spg, valueType)
         if value.ontological_category.type() == "location":
@@ -273,6 +299,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_processFeatures(self, p_features):
+        """ returns process features from p_features descriptor template.  """
         features = self.descriptor_templates['processFeatures']
         final = {}
         for k, v in features.items():
@@ -285,6 +312,7 @@ class CoreSpecializer(UtilitySpecializer):
         return final
 
     def get_eventFeatures(self, e_features):
+        """ returns event features from e_features descriptor template.  """
         features = self.descriptor_templates['eventFeatures']
         final = {}
         for k, v in features.items():
@@ -297,6 +325,7 @@ class CoreSpecializer(UtilitySpecializer):
         return final
 
     def get_objectDescriptor(self, item, resolving=False):
+        """ Returns an object descriptor from descriptor template. Uses RD elements, as well as other things pointing to object. """
         if "pointers" not in item.__dir__():
             item.pointers = self.invert_pointers(item)
         template = self.descriptor_templates['objectDescriptor']
@@ -328,6 +357,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_RDExtras(self, extras):
+        """ RD Extras contain embedded RD information, like specificWh, Event-description, quantity. """
         template = self.descriptor_templates['RDExtras']
         returned = {}
         for key, value in template.items():
@@ -339,6 +369,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def get_eventRDDescriptor(self, item):
+        """ Event RDs have an associated event description. """
         # TODO: Event/entity resolution?
         returned = self.get_objectDescriptor(item)
         eventDescription = dict()
@@ -354,6 +385,7 @@ class CoreSpecializer(UtilitySpecializer):
 
 
     def fill_pointer(self, pointer, item):
+        """ Fills pointers to an RD in a structured way. """
         if hasattr(pointer, "modifiedThing") and pointer.modifiedThing.index() != item.index():
             return None
         elif hasattr(pointer, "temporality") and pointer.temporality.type() != "atemporal":
@@ -393,15 +425,3 @@ class CoreSpecializer(UtilitySpecializer):
 
 
 
-#analyzer = Analyzer("http://localhost:8090")
-#cs = CoreSpecializer(analyzer)
-
-
-#parse = analyzer.parse("if the box that John sees is big, it is not red.")[0]
-
-#s = cs.specialize(parse)
-
-#parse = analyzer.parse("the box that he saw")[0]
-#parse = analyzer.parse("Robot1, move north then move south then move west!")[0]
-#parse = analyzer.parse("Robot1, move north then move south!")[0]
-#parse = analyzer.parse("he moved to the box.")[0]
