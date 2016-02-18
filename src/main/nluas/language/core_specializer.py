@@ -6,6 +6,16 @@ The Core Specializer performs some basic operations in converting a SemSpec to a
 Crucial to its design is the notion of templates, which contain specifications for filling in the n-tuple.
 Templates should be defined declaratively.
 
+See notes on individual methods for more details, as well as documentation here:
+* https://embodiedconstructiongrammar.wordpress.com/2016/02/12/core-specializer-draft
+* 
+
+The crucial interface methods include:
+* specialize(self, fs)
+* specialize_event(self, fs)
+* fill_parameters(self, eventProcess)
+* fill_value(self, eventProcess)
+
 """
 
 from nluas.language.specializer_utils import *
