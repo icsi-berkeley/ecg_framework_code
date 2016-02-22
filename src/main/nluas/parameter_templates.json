@@ -111,6 +111,7 @@
         "creator": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",
         "createdThing": {"descriptor": "objectDescriptor"},
+        "intended_recipient": {"descriptor": "objectDescriptor"},
         "p_features": {"descriptor": "processFeatures"}
     },
     "ComplexProcess": {

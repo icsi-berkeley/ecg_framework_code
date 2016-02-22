@@ -96,6 +96,7 @@ class CoreSpecializer(UtilitySpecializer):
         eventProcess = fs.m.content.eventProcess
         ntuple = self.mood_templates[mood]
         ntuple['eventDescriptor'] = self.specialize_event(content)
+        #print(ntuple)
         #if content.type() in self.event_templates:
         #    ntuple['parameters'] = [self.specialize_event(content)]
             #return ntuple
