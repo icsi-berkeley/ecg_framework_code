@@ -7,17 +7,40 @@
         "actionary": "actionary",
         "collaborative": null,
         "heading": {"descriptor": "headingDescriptor", "default": {"headingDescriptor": "north"}},
-        "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0}}},
+        "distance": {"descriptor": "scaleDescriptor", "default": {"scaleDescriptor": {"units": "inches", "value": 4.0, "property": "distance"}}},
         "spg": {"descriptor": "spgDescriptor"},
         "direction": "direction",
         "speed": 0.5
     },
+    "ObjectTransfer": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary",
+        "process1": {"parameters": "process1"},
+        "process2": {"parameters": "process2"},
+        "getter": {"descriptor": "objectDescriptor"},
+        "theme": {"descriptor": "objectDescriptor"}
+    },
+    "Manipulation": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"},
+        "actionary": "actionary",
+        "manipulated_entity": {"descriptor": "objectDescriptor"}
+    },
     "Stasis": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "state": {"method": "get_state"},
-        "negated": "negated",
         "actionary": "actionary",
         "p_features": {"descriptor": "processFeatures"}
+    },
+    "Quantity": {
+        "units": "units",
+        "property": "property",
+        "amount": {"parameters": "amount"}
+    },
+    "QuantitySchema": {
+        "value": 0.5,
+        "number": "number"
     },
     "ForceApplication": {
         "protagonist": {"descriptor": "objectDescriptor"},
@@ -74,12 +97,22 @@
         "actionary": "actionary",
         "causalProcess": {"parameters": "process1"},
         "affectedProcess": {"parameters": "process2"},
-        "complexKind": "complexKind"
+        "complexKind": "complexKind",
+        "p_features": {"descriptor": "processFeatures"}
     },
     "Change": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",
-        "state": {"method": "get_state"}
+        "state": {"method": "get_state"},
+        "direction": "direction"
+    },
+    "Creation": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "creator": {"descriptor": "objectDescriptor"},
+        "actionary": "actionary",
+        "createdThing": {"descriptor": "objectDescriptor"},
+        "intended_recipient": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"}
     },
     "ComplexProcess": {
         "protagonist": {"descriptor": "objectDescriptor"},

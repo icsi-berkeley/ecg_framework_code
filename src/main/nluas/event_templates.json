@@ -12,9 +12,9 @@
         "complexKind": "complexKind"
     },
     "EventDescriptor": {
+        "profiledParticipant": {"descriptor": "objectDescriptor"},
         "eventProcess": {"parameters": "eventProcess"},
-        "e_features": {"descriptor": "eventFeatures"},
-        "profiledParticipant": {"descriptor": "objectDescriptor"}
+        "e_features": {"descriptor": "eventFeatures"}  
     }
 }
 }
