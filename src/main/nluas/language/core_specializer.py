@@ -17,6 +17,17 @@ The crucial interface methods include:
 * fill_parameters(self, eventProcess)
 * fill_value(self, eventProcess)
 
+As a general rule for template-building:
+* If a slot in a grammar schema has a "filler", e.g. another schema (like "RD"),
+  the template filler for that role should have a "descriptor" (objectDescriptor).
+* If a slot in the grammar schema just maps onto an ontology item or string value,
+  the value in the template should be the role name.
+* QUESTION: if no value is found, should fill_value return the "value" in the template, or None? (probably the former?)
+
+NOTES / TODO:
+* Referent resolution for embedded phrases ("is box1 near the box" "which box" "the blue one" --> should resolve with blue box, not box1)
+* Better specialization of sentence fragments
+
 """
 
 from nluas.language.specializer_utils import *
@@ -49,6 +60,13 @@ class CoreSpecializer(UtilitySpecializer):
                         'boolean': False}
 
         #self.read_templates
+
+    def specialize_fragment(self, fs):
+        """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """
+        if fs.m.type() == "RD":
+            return self.get_objectDescriptor(fs.m)
+        else:
+            print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
 
     def initialize_templates(self):
         """ Initializes templates from path, set above. """
@@ -90,12 +108,15 @@ class CoreSpecializer(UtilitySpecializer):
         and an associated EventDescriptor. However, this could be generalized to route
         specialized n-tuples for other types of input, like an NP.
         """
+        if fs.m.type() != "DiscourseElement":
+            return self.specialize_fragment(fs)
         self.fs = fs
         mood = str(fs.m.mood).replace("-", "_").lower()
         content = fs.m.content
         eventProcess = fs.m.content.eventProcess
         ntuple = self.mood_templates[mood]
         ntuple['eventDescriptor'] = self.specialize_event(content)
+        #print(ntuple)
         #if content.type() in self.event_templates:
         #    ntuple['parameters'] = [self.specialize_event(content)]
             #return ntuple
@@ -154,6 +175,7 @@ class CoreSpecializer(UtilitySpecializer):
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
+        parameters['frame'] = process    # Maybe make this part of template?
         return parameters
 
 
@@ -165,10 +187,10 @@ class CoreSpecializer(UtilitySpecializer):
         return None
 
 
-    def get_headingDescriptor(self, process):
+    def get_headingDescriptor(self, headingSchema):
         """ Returns a heading for a headingDescriptor. Could be more complex depending on domain,
         in which case the method would be overridden. """
-        return process.heading.type()
+        return headingSchema.tag.type()
 
     def fill_value(self, key, value, input_schema):
         """ Most important specializer method. Takes in a skeleton key,value pairing from a template,
@@ -191,7 +213,7 @@ class CoreSpecializer(UtilitySpecializer):
                     if value['descriptor'] == "objectDescriptor":
                         self._stacked.append(descriptor)
                     if key == "protagonist":
-                        self.protagonist = descriptor
+                        self.protagonist = dict(descriptor)
                     return descriptor
                 if "default" in value:
                     return value['default']
@@ -207,6 +229,7 @@ class CoreSpecializer(UtilitySpecializer):
             elif key == "negated":
                 return self.get_negated(attribute.type())
             return attribute.type()
+        #return value  # TODO: Which one to return? Default or None?
         return final_value
 
     def get_negated(self, value):
@@ -223,6 +246,9 @@ class CoreSpecializer(UtilitySpecializer):
         """ Returns the relevant property values for a PropertyModifier. """
         returned = {}
         kind = pm.kind.type()
+        if hasattr(pm, "modifier") and pm.modifier.has_filler():
+            filler = {'modifier': self.fill_value("modifier", {"parameters": "modifier"}, pm)}
+            returned.update(filler)
         if hasattr(pm, "value"):
             value = pm.value.type()
             if value == "scalarValue":
@@ -291,7 +317,9 @@ class CoreSpecializer(UtilitySpecializer):
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
         if value.index() == spg.landmark.index():
-            return {'objectDescriptor': self.get_objectDescriptor(value)}
+            od = self.get_objectDescriptor(value)
+            self._stacked.append({'objectDescriptor': od})
+            return {'objectDescriptor': od}
         if value.type() == "RD":
             return {'objectDescriptor': self.get_objectDescriptor(value)}
 
@@ -345,7 +373,7 @@ class CoreSpecializer(UtilitySpecializer):
                         returned.update(filler)
                         if "property" in filler:
                             if self.protagonist is not None:
-                                if not hasattr(self.protagonist["objectDescriptor"], "type"):
+                                if not "type" in self.protagonist["objectDescriptor"]:
                                     self.protagonist["objectDescriptor"].update(
                                         filler["property"]["objectDescriptor"])
         if 'referent' in returned:
@@ -407,6 +435,8 @@ class CoreSpecializer(UtilitySpecializer):
                 process= {'processDescriptor': self.get_processDescriptor(pointer.eventProcess, item)}
                 self.event = True
                 return process
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "NounNounModifier") and pointer.modifier.has_filler():
+                return dict(modifier=dict(objectDescriptor=self.get_objectDescriptor(pointer.modifier)))
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Modification") and pointer.modifier.has_filler():
                 return dict(property=dict(objectDescriptor=self.get_objectDescriptor(pointer.modifier)))
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "RefIdentity") and pointer.second.index() != item.index():
