@@ -20,7 +20,7 @@ class Analyzer(object):
     def __init__(self, url):
         self.analyzer = ServerProxy(url, encoding='utf-8') 
         
-    def parse(self, sentence):        
+    def parse(self, sentence):      
         return [as_featurestruct(r, s) for r, s in self.analyzer.parse(sentence)]
     
     def issubtype(self, typesystem, child, parent):

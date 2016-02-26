@@ -15,7 +15,8 @@
             "EventDescriptor": {"descriptor": "processDescriptor"},
             "PartWhole": {"part": {"descriptor": "objectDescriptor"}},
             "Modification": {"modifier": null},
-            "RefIdentity": {"second": "objectDescriptor"}
+            "RefIdentity": {"second": "objectDescriptor"},
+            "NounNounModifier": {"modifier": "objectDescriptor"}
         }
     },
     "RDExtras": {

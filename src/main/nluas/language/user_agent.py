@@ -1,3 +1,4 @@
+
 """
 Author: seantrott <seantrott@icsi.berkeley.edu>
 
@@ -10,6 +11,7 @@ from nluas.ntuple_decoder import NtupleDecoder
 #from nluas.language.spell_checker import *
 import sys, traceback, time
 import json
+import time
 
 class WaitingException(Exception):
     def __init__(self, message):
@@ -18,7 +20,8 @@ class WaitingException(Exception):
 class UserAgent(CoreAgent):
     def __init__(self, args):
         #self.ui_parser = self.setup_ui_parser()
-        
+
+
         CoreAgent.__init__(self, args)
         self.initialize_UI()
         #self.ui_parser = self.setup_ui_parser()
@@ -36,6 +39,7 @@ class UserAgent(CoreAgent):
     def initialize_UI(self):
         #args = self.ui_parser.parse_known_args(self.unknown)
         #self.analyzer_port = args[0].port
+        self.clarification = False
         self.analyzer_port = "http://localhost:8090"
         connected, printed = False, False
         while not connected:
@@ -67,8 +71,8 @@ class UserAgent(CoreAgent):
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     #if self.specializer.debug_mode:
                     #   self.write_file(json_ntuple, msg)
-                    self.transport.send(self.solve_destination, json_ntuple)
-                    break
+                    return json_ntuple
+                    #break
                 except Exception as e:
                     self.output_stream(self.name, e)
                     traceback.print_exc()
@@ -88,6 +92,7 @@ class UserAgent(CoreAgent):
         elif call_type == "clarification":
             #self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
             #self.prompt(clarification=True, ntuple=ntuple['ntuple'])
+            #self.output_stream(ntuple['tag'], ntuple)
             self.process_clarification(ntuple['tag'], ntuple['message'], ntuple['ntuple'])
             #print(ntuple['ntuple'])
         elif call_type == "response":
@@ -106,30 +111,71 @@ class UserAgent(CoreAgent):
         f.write(json_ntuple)
 
     def prompt(self):
-        while True:
-            specialize = True
-            msg = input("> ")
-            if msg == "q":
-                self.transport.quit_federation()
-                quit()
-            elif msg == None or msg == "":
-                specialize = False
-            elif msg.lower() == 'd':
-                self.specializer.set_debug()
-                specialize = False
-            elif specialize:
-                #if self.check_spelling(msg):
-                self.process_input(msg)
+        while True:# and not self.clarification:
+            #print(self.clarification)
+            if self.clarification:
+                pass
+            else:
+                specialize = True
+                msg = input("> ")
+
+                if msg == "q":
+                    self.transport.quit_federation()
+                    quit()
+                elif msg == None or msg == "":
+                    specialize = False
+                elif msg.lower() == 'd':
+                    self.specializer.set_debug()
+                    specialize = False
+                elif specialize:
+                    #if self.check_spelling(msg):
+                    json_ntuple = self.process_input(msg)
+                    if json_ntuple and json_ntuple != "null":
+                        self.transport.send(self.solve_destination, json_ntuple)
 
 
 
     def process_clarification(self, tag, msg, ntuple):
+        self.clarification = True
         self.output_stream(tag, msg)
-        #msg = input(msg + "> ")
-        new = self.decoder.convert_JSON_to_ntuple(ntuple)
-        #print(new)
-        #print(msg)
         #print(ntuple)
+        while True:
+            msg = input("  > ")
+            #if msg == "q":
+            #    self.clarification = False
+            #    self.transport.quit_federation()
+            if msg == "q":
+                self.clarification = False
+                break
+            elif msg:
+                try:
+                    descriptor = json.loads(self.process_input(msg))
+                    #print(descriptor)
+                    converted = self.decoder.convert_JSON_to_ntuple(ntuple)
+
+                    self.clarification = False
+                    new_ntuple = self.clarify_ntuple(converted, descriptor)
+                    json_ntuple = self.decoder.convert_to_JSON(new_ntuple)
+                    #json_ntuple = json.dumps(new_ntuple)
+                    self.transport.send(self.solve_destination, json_ntuple)
+                    self.clarification = False
+                    break
+                except Exception as e:
+                    print(e)
+
+
+    def clarify_ntuple(self, ntuple, descriptor):
+        """ Clarifies a tagged ntuple with new descriptor. """
+        new = dict()
+        for key, value in ntuple.items():
+            if "*" in key:
+                new_key = key.replace("*", "")
+                new[new_key] = descriptor
+            elif type(value) == dict:
+                new[key] = self.clarify_ntuple(value, descriptor)
+            else:
+                new[key] = value
+        return new
 
     
     def check_spelling(self, msg):
