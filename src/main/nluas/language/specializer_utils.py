@@ -124,6 +124,9 @@ class UtilitySpecializer(DebuggingSpecializer):
         location = ''
         for i in goal.__features__.values():
             for role, filler in i.__items__():
+                if filler.type() == "Support":
+                    if filler.supporter.index() == goal.index():
+                        return "on"
                 if filler.type() == 'Sidedness':
                     if filler.back.index() == goal.index():
                         return 'behind' #location = 'behind'
