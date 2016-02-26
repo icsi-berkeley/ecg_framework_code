@@ -68,6 +68,7 @@ class UserAgent(CoreAgent):
             for fs in semspecs:
                 try:
                     ntuple = self.specializer.specialize(fs)
+
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     #if self.specializer.debug_mode:
                     #   self.write_file(json_ntuple, msg)
@@ -130,7 +131,7 @@ class UserAgent(CoreAgent):
                 elif specialize:
                     #if self.check_spelling(msg):
                     json_ntuple = self.process_input(msg)
-                    if json_ntuple and json_ntuple != "null":
+                    if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
                         self.transport.send(self.solve_destination, json_ntuple)
 
 
@@ -149,10 +150,10 @@ class UserAgent(CoreAgent):
                 break
             elif msg:
                 try:
-                    descriptor = json.loads(self.process_input(msg))
+                    first = self.process_input(msg)
+                    descriptor = json.loads(first)
                     #print(descriptor)
                     converted = self.decoder.convert_JSON_to_ntuple(ntuple)
-
                     self.clarification = False
                     new_ntuple = self.clarify_ntuple(converted, descriptor)
                     json_ntuple = self.decoder.convert_to_JSON(new_ntuple)
