@@ -124,6 +124,9 @@ class UtilitySpecializer(DebuggingSpecializer):
         location = ''
         for i in goal.__features__.values():
             for role, filler in i.__items__():
+                if filler.type() == "Support":
+                    if filler.supporter.index() == goal.index():
+                        return "on"
                 if filler.type() == 'Sidedness':
                     if filler.back.index() == goal.index():
                         return 'behind' #location = 'behind'
@@ -142,7 +145,6 @@ class UtilitySpecializer(DebuggingSpecializer):
                         location = 'at'
                         #location['relation'] = 'at'
         return location
-
 
     def invert_pointers(self, goal):
         final = {}
@@ -208,11 +210,20 @@ class UtilitySpecializer(DebuggingSpecializer):
                 ref = self.clean_referent(ref)
                 return ref
         return {'objectDescriptor':item}
-
+        #raise ReferentResolutionException("Sorry, I did not find a suitable referent found in past descriptions.")
 
     def clean_referent(self, ref):
         ref['objectDescriptor'].pop('property', None)
         return ref
+
+    def ordering(self, fs, ref):
+        for index, value in fs.rootconstituent.__features__.items():
+            if hasattr(value, "m") and value.m and value.m.type() == "RD":
+                print(index)
+                #print(repr(value))
+                print(value.m.ontological_category.type())
+                #temp = self.get_objectDescriptor(value.m)
+                #print(temp)
 
     def compatible_referents(self, pronoun, ref):
         for key, value in pronoun.items():
