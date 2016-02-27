@@ -47,7 +47,7 @@ class UserAgent(CoreAgent):
                 self.initialize_analyzer()
                 self.initialize_specializer()
                 connected = True
-            except ConnectionRefusedError as e:
+            except Exception as e:
                 if not printed:
                     message = "The analyzer_port address provided refused a connection: {}".format(self.analyzer_port)
                     self.output_stream(self.name, message)
