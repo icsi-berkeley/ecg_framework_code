@@ -63,8 +63,14 @@ class CoreSpecializer(UtilitySpecializer):
 
     def specialize_fragment(self, fs):
         """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """
-        if fs.m.type() == "RD":
+        if not hasattr(fs, "m"):
+            return None
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "RD"):
             return self.get_objectDescriptor(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"):
+            return self.specialize_event(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Process"):
+            return self.fill_parameters(fs.m)
         else:
             print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
 

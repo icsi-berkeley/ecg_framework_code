@@ -28,9 +28,9 @@ while True:
             for fs in semspecs:
                 try:
                     ntuple = cs.specialize(fs)
-                    decoder.pprint_ntuple(ntuple)
-                    print(ntuple)
-                    #pprint.pprint(ntuple)
+                    #decoder.pprint_ntuple(ntuple)
+                    #print(ntuple)
+                    pprint.pprint(ntuple)
                     break
                 except Exception as e:
                     traceback.print_exc()
