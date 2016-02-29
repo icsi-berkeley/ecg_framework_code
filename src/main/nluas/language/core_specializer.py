@@ -108,6 +108,7 @@ class CoreSpecializer(UtilitySpecializer):
         return eventDescriptor
 
 
+
     def specialize(self, fs):
         """ Takes in a FeatureStruct (fs), produces an ntuple. 
         Currently requires that the FS be a discourse utterance with a mood ("Declarative", etc.),
@@ -115,30 +116,32 @@ class CoreSpecializer(UtilitySpecializer):
         specialized n-tuples for other types of input, like an NP.
         """
         if fs.m.type() != "DiscourseElement":
-            return self.specialize_fragment(fs)
-        self.fs = fs
-        mood = str(fs.m.mood).replace("-", "_").lower()
-        content = fs.m.content
-        eventProcess = fs.m.content.eventProcess
-        ntuple = self.mood_templates[mood]
-        ntuple['eventDescriptor'] = self.specialize_event(content)
-        #print(ntuple)
-        #if content.type() in self.event_templates:
-        #    ntuple['parameters'] = [self.specialize_event(content)]
-            #return ntuple
-        #else:
-        #parameters = self.fill_parameters(eventProcess)
-        #ntuple['parameters'] = [parameters]
-        if 'eventProcess' in ntuple['eventDescriptor']:
-            parameters = ntuple['eventDescriptor']['eventProcess']
-            if mood == "wh_question":
-                ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
+            ntuple = self.specialize_fragment(fs)
+        else:
+            self.fs = fs
+            mood = str(fs.m.mood).replace("-", "_").lower()
+            content = fs.m.content
+            eventProcess = fs.m.content.eventProcess
+            ntuple = self.mood_templates[mood]
+            ntuple['eventDescriptor'] = self.specialize_event(content)
+            #print(ntuple)
+            #if content.type() in self.event_templates:
+            #    ntuple['parameters'] = [self.specialize_event(content)]
+                #return ntuple
+            #else:
+            #parameters = self.fill_parameters(eventProcess)
+            #ntuple['parameters'] = [parameters]
+            if 'eventProcess' in ntuple['eventDescriptor']:
+                parameters = ntuple['eventDescriptor']['eventProcess']
+                if mood == "wh_question":
+                    ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
+        
+        if ntuple:
+            ntuple = self.map_ontologies(ntuple)
 
-        ntuple = self.map_ontologies(ntuple)
-
-        if self.debug_mode:
-            print(ntuple)
-        return dict(ntuple)
+            if self.debug_mode:
+                print(ntuple)
+            return dict(ntuple)
 
 
     def get_return_type(self, parameters):
