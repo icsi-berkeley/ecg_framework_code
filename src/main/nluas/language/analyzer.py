@@ -70,6 +70,16 @@ class Analyzer(object):
             print(p.message)
             raise Fault(-1, p.message)
 
+    def test_analysis(self, analysis):
+        """ For testing how to output spans, etc. In development. 
+        Mostly just a way to store info about methods. """
+        featureStruct = analysis.featureStructure
+        slots = featureStruct.slots.toArray()  # Puts slots into array
+        first = slots[0]  # Get first slot, e.g. ROOT
+        entries = first.features.entrySet().toArray() # Puts features into entry set
+        value = entries[0].value # Gets actual value, e.g. EventDescriptor[2]
+
+
 
     def get_mapping(self):
         v = AP.valueOf("MAPPING_PATH")
@@ -265,5 +275,5 @@ if __name__ == '__main__':
     else:
         if len(sys.argv) != 2:
             usage()
-        main(sys.argv)
-        #analyzer = main2(sys.argv)
+        #main(sys.argv)
+        analyzer = main2(sys.argv)
