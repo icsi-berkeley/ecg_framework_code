@@ -21,7 +21,17 @@ class Analyzer(object):
         self.analyzer = ServerProxy(url, encoding='utf-8') 
         
     def parse(self, sentence):        
-        return [as_featurestruct(r, s) for r, s in self.analyzer.parse(sentence)]
+        total = self.analyzer.parse(sentence)
+        parse = total['parse']
+        spans = total['spans']
+
+        return [as_featurestruct(r, s) for r, s in parse]
+
+    def full_parse(self, sentence):
+        total = self.analyzer.parse(sentence)
+        parse = [as_featurestruct(r, s) for r, s in total['parse']]
+        spans = total['spans']
+        return {'spans': spans, 'parse': parse}
     
     def issubtype(self, typesystem, child, parent):
         return self.analyzer.issubtype(typesystem, child, parent)

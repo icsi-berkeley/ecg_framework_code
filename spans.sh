@@ -1,0 +1,1 @@
+python3 -i src/main/nluas/language/span_labeler.py
