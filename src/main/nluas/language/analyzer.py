@@ -99,16 +99,19 @@ class Analyzer(object):
             seq = [(parent, role) + desc(slots[s_id]) for parent, role, s_id in dfs('<ROOT>', root_, None, slots) if parent != -1]
             return (-1, '<ROOT>') + desc(root_), seq
 
-        def convert_span(span):
-            return ((span.left, span.right), span.getType().getName())
+        def convert_span(span, fs):
+            """ Return span, like (0, 4), name of cxn, and slot ID for cxn. """
+            return {'span': (span.left, span.right), 'type': span.getType().getName(), 'id': fs.getSlot(span.slotID).slotIndex}
 
         def get_spans(parses):
             all_spans = []
             for parse in parses:
+                parse_spans = []
                 analysis = parse.getAnalyses()[0]
                 spans = list(analysis.getSpans())
                 for span in spans:
-                    all_spans.append(convert_span(span))
+                    parse_spans.append(convert_span(span, analysis.featureStructure))
+                all_spans.append(parse_spans)
             return all_spans
 
         

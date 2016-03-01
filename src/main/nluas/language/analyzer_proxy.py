@@ -31,7 +31,7 @@ class Analyzer(object):
         total = self.analyzer.parse(sentence)
         parse = [as_featurestruct(r, s) for r, s in total['parse']]
         spans = total['spans']
-        return {'spans': spans, 'parse': parse}
+        return {'spans': spans, 'parse': parse, 'original': total['parse']}
     
     def issubtype(self, typesystem, child, parent):
         return self.analyzer.issubtype(typesystem, child, parent)
