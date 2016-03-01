@@ -2,15 +2,14 @@ from nluas.language.analyzer_proxy import *
 import openpyxl
 from openpyxl.styles import colors
 
-
-analyzer = Analyzer("http://localhost:8090")
+from graphviz import Digraph
 
 from collections import OrderedDict
-sentence = "the man ran into the room."
-split = sentence.split()
 
-info = analyzer.full_parse(sentence)
-parse, spans = info['parse'], info['spans']
+
+def split_sentence(sentence):
+	s = sentence.replace(".", " . ").replace(",", " , ")
+	return s.split()
 
 def match_spans(split, spans):
 	words = OrderedDict()
@@ -28,7 +27,7 @@ def match_spans2(split, spans):
 		final[span[1]] = (split[lr[0]:lr[1]], lr)
 	return final
 
-s = match_spans2(split, spans)
+
 
 def tag_excel(matched, split):
 	wb = openpyxl.load_workbook('example.xlsx')
@@ -50,4 +49,55 @@ def tag_excel(matched, split):
 	wb.save("example.xlsx")
 	return sheet
 
-tag_excel(s, split)
+def generate_graph(dot, parse, observed=[], seen=[]):
+	
+	#s = matched[0]
+	s = parse
+	last_label = s.__type__
+	dot.node(last_label, last_label)
+	for key in parse.__fs__().__dict__.keys():
+		new = getattr(s, key)
+
+		new_label = str(new.__type__)
+		if new_label and new_label != "None":
+			dot.node(new_label, new_label)
+			dot.edge(last_label, new_label, label=key)
+		if new.has_filler() and not new.index() in seen and not new_label in observed and new.__typesystem__ == "SCHEMA":
+			print(new_label in observed)
+			print(new_label)
+			print(observed)
+			observed.append(new_label)
+			seen.append(new.index())
+			g = generate_graph(Digraph(), new, observed, seen)
+			dot.subgraph(g)
+
+
+
+	return dot
+
+
+analyzer = Analyzer("http://localhost:8090")
+
+
+sentence = "he moved the box into the room."
+split = split_sentence(sentence)
+
+info = analyzer.full_parse(sentence)
+parse, spans = info['parse'], info['spans']
+
+s = match_spans2(split, spans)
+
+dot = Digraph()
+graph = generate_graph(dot, parse[0])
+#graph.render('label_test/semspec.gv', view=True)
+
+
+#tag_excel(s, split)
+
+
+
+
+
+
+
+
