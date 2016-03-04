@@ -113,7 +113,7 @@ def generate_graph(dot, parse, spans, observed=[], seen=[]):
 analyzer = Analyzer("http://localhost:8090")
 
 
-sentence = "he killed the civilian for the soldier"
+sentence = "Mary established the store"
 split = split_sentence(sentence)
 
 info = analyzer.full_parse(sentence)

@@ -12,6 +12,20 @@
         "direction": "direction",
         "speed": 0.5
     },
+    "Communication": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "content": {"eventDescription": "content"},
+        "actionary": "actionary",
+        "listener": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"}
+    },
+    "Thought": {
+        "protagonist": {"descriptor": "objectDescriptor"},
+        "content": {"eventDescription": "content"},
+        "actionary": "actionary",
+        "thinker": {"descriptor": "objectDescriptor"},
+        "p_features": {"descriptor": "processFeatures"}
+    },
     "ObjectTransfer": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "p_features": {"descriptor": "processFeatures"},
