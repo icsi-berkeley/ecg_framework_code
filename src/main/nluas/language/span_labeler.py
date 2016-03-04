@@ -13,11 +13,14 @@ def split_sentence(sentence):
 	s = sentence.replace(".", " . ").replace(",", " , ")
 	return s.split()
 
+
+
 def match_spans2(split, spans):
 	final = OrderedDict()
 	for span in spans:
 		lr = span['span']
-		final[span['type']] = (split[lr[0]:lr[1]], lr, span['id'])
+		key = "{}[{}]".format(span['type'], str(span['id']))
+		final[key] = (split[lr[0]:lr[1]], lr, span['id'])
 	return final
 
 
@@ -66,24 +69,29 @@ def tag_excel(matched, split, parse):
 			
 			if semantics:
 				cell_s = sheet.cell(row=row+1, column=j+1)
-				cell_s.set_explicit_value("{} :: {}".format(semantics[0], "+".join(semantics[1])))
+				cell_s.set_explicit_value(semantics[0])
+				#cell_s.set_explicit_value("{} :: {}".format(semantics[0], "+".join(semantics[1])))
 				cell_s.fill = greenFill
 
 		row+=2
 	wb.save("example.xlsx")
 	return sheet
 
-def generate_graph(dot, parse, observed=[], seen=[]):
+def generate_graph(dot, parse, spans, observed=[], seen=[]):
 	
 	#s = matched[0]
 	s = parse
 	last_label = "{}[{}]".format(str(s.__type__), str(s.__index__))
+	if last_label in spans:
+		last_label += " '{}'".format(" ".join(spans[last_label][0]))
 	dot.node(last_label, last_label)
 	for key in parse.__fs__().__dict__.keys():
 		new = getattr(s, key)
 
 		new_label = "{}[{}]".format(str(new.__type__), str(new.__index__))
-		if new_label and str(new.__type__) != "None" and key != "features":
+		if new_label in spans:
+			new_label += " '{}'".format(" ".join(spans[new_label][0]))
+		if new_label and str(new.__type__) != "None" and key != "features" and new.__type__ != "A123":
 			if new.__typesystem__ == "SCHEMA":
 				dot.node(new_label, new_label, color="red")
 			elif new.__typesystem__ == "CONSTRUCTION":
@@ -95,18 +103,17 @@ def generate_graph(dot, parse, observed=[], seen=[]):
 			if new.has_filler() and not new.index() in seen and not new_label in observed:# and new.__typesystem__ == "CONSTRUCTION":
 				observed.append(new_label)
 				seen.append(new.index())
-				g = generate_graph(Digraph(), new, observed, seen)
+				g = generate_graph(Digraph(), new, spans, observed, seen)
 				dot.subgraph(g)
-
-
-
 	return dot
+
+
 
 
 analyzer = Analyzer("http://localhost:8090")
 
 
-sentence = "John, bring the box into the room!"
+sentence = "he killed the civilian for the soldier"
 split = split_sentence(sentence)
 
 info = analyzer.full_parse(sentence)
@@ -115,7 +122,7 @@ parse, spans = info['parse'], info['spans']
 s = match_spans2(split, spans[0])
 
 dot = Digraph()
-#graph = generate_graph(dot, parse[0])
+graph = generate_graph(dot, parse[0], s)
 #graph.render('label_test/semspec.gv', view=True)
 
 

@@ -11,3 +11,5 @@ John built Mary a house
 the house was built by John
 John painted the house blue
 the house was painted blue by John
+John gave Mary a house
+John gave a house to Mary
