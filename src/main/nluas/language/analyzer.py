@@ -69,7 +69,17 @@ class Analyzer(object):
         except ParserException, p:
             print(p.message)
             raise Fault(-1, p.message)
-            #raise Fault(-1, u'The sentence "%s" has no valid parses.' % sentence)
+
+    def test_analysis(self, analysis):
+        """ For testing how to output spans, etc. In development. 
+        Mostly just a way to store info about methods. """
+        featureStruct = analysis.featureStructure
+        slots = featureStruct.slots.toArray()  # Puts slots into array
+        first = slots[0]  # Get first slot, e.g. ROOT
+        entries = first.features.entrySet().toArray() # Puts features into entry set
+        value = entries[0].value # Gets actual value, e.g. EventDescriptor[2]
+
+
 
     def get_mapping(self):
         v = AP.valueOf("MAPPING_PATH")
@@ -88,8 +98,29 @@ class Analyzer(object):
             root_ = root(parse)
             seq = [(parent, role) + desc(slots[s_id]) for parent, role, s_id in dfs('<ROOT>', root_, None, slots) if parent != -1]
             return (-1, '<ROOT>') + desc(root_), seq
+
+        def convert_span(span, fs):
+            """ Return span, like (0, 4), name of cxn, and slot ID for cxn. """
+            return {'span': (span.left, span.right), 'type': span.getType().getName(), 'id': fs.getSlot(span.slotID).slotIndex}
+
+        def get_spans(parses):
+            all_spans = []
+            for parse in parses:
+                parse_spans = []
+                analysis = parse.getAnalyses()[0]
+                spans = list(analysis.getSpans())
+                for span in spans:
+                    parse_spans.append(convert_span(span, analysis.featureStructure))
+                all_spans.append(parse_spans)
+            return all_spans
+
         
-        return [as_sequence(p) for p in self.get_parses(sentence)]
+
+
+        parses = self.get_parses(sentence)
+        
+        return {'parse': [as_sequence(p) for p in parses], 'spans': get_spans(parses)}
+
 
 
     def getConstructionSize(self):
@@ -194,6 +225,7 @@ def main(args):
     start = time.time()
     analyzer = Analyzer(args[1])
     end = time.time()
+    print("Analyzer ready...")
     #usage_time(start, end, analyzer)
     try:
         #server_thread = Thread(target=server, kwargs={'obj': analyzer, 'host': host, 'port': port})
@@ -203,7 +235,15 @@ def main(args):
     except Exception, e:
         print(e)
         #print "Address " + host + ":" + str(port) + " is already in use. Using Analyzer on existing server. Kill that process to restart with a new Analyzer." 
-    
+
+def main2(args):
+    display(interpreter())
+    #display('Starting up Analyzer ... ', term='')
+    start = time.time()
+    analyzer = Analyzer(args[1])
+    end = time.time()
+    print("Analyzer ready...")
+    return analyzer
 
 def test_remote(sentence ='Robot1, move to location 1 2!'):
     from feature import as_featurestruct
@@ -239,3 +279,4 @@ if __name__ == '__main__':
         if len(sys.argv) != 2:
             usage()
         main(sys.argv)
+        #analyzer = main2(sys.argv)
