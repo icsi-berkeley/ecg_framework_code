@@ -62,21 +62,35 @@ class UserAgent(CoreAgent):
     def initialize_specializer(self):
         self.specializer=CoreSpecializer(self.analyzer)
 
+    def match_spans(self, spans, sentence):
+        sentence = sentence.replace(".", " . ").replace(",", " , ").replace("!", " ! ").split(" ")
+        final = OrderedDict()
+        for span in spans:
+            lr = span['span']
+            final[span['type']] = (sentence[lr[0]:lr[1]], lr, span['id'])
+        return final
+
     def process_input(self, msg):
         try:
-            semspecs = self.analyzer.parse(msg)
+            full_parse = self.analyzer.full_parse(msg)
+            semspecs = full_parse['parse']
+            spans = full_parse['spans']
+            
+            #semspecs = self.analyzer.parse(msg)
+            index = 0
             for fs in semspecs:
                 try:
+                    span = spans[index]
+                    matched = self.match_spans(span, msg)
+                    self.specializer.set_spans(matched)
+                    
                     ntuple = self.specializer.specialize(fs)
-
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
-                    #if self.specializer.debug_mode:
-                    #   self.write_file(json_ntuple, msg)
                     return json_ntuple
-                    #break
                 except Exception as e:
                     self.output_stream(self.name, e)
                     traceback.print_exc()
+                    index += 1
         except Exception as e:
             print(e)
 

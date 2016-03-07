@@ -55,11 +55,18 @@ class CoreSpecializer(UtilitySpecializer):
 
         self.protagonist = None
 
+        self.spans = None
+
         self.negated = {'yes': True,
                         'no': False,
                         'boolean': False}
 
         #self.read_templates
+
+    def set_spans(self, spans):
+        """ Sets self.spans to constructional spans for current input it's specializing. Will use
+        this for referent resolution (TODO). """
+        self.spans = spans
 
     def specialize_fragment(self, fs):
         """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """
