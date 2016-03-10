@@ -66,7 +66,6 @@ class CoreSpecializer(UtilitySpecializer):
     def set_spans(self, spans):
         """ Sets the current constructional spans to input spans. These are used for referent resolution. (TO DO)."""
         self.spans = spans
-        print(spans)
 
     def specialize_fragment(self, fs):
         """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """

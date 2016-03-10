@@ -278,5 +278,5 @@ if __name__ == '__main__':
     else:
         if len(sys.argv) != 2:
             usage()
-        #main(sys.argv)
-        analyzer = main2(sys.argv)
+        main(sys.argv)
+        #analyzer = main2(sys.argv)
