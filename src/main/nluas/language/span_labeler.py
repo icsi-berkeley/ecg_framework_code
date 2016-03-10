@@ -10,7 +10,7 @@ from openpyxl.styles import PatternFill
 
 
 def split_sentence(sentence):
-	s = sentence.replace(".", " . ").replace(",", " , ")
+	s = sentence.replace(".", " . ").replace(",", " , ").replace("?", " ? ")
 	return s.split()
 
 
@@ -77,7 +77,7 @@ def tag_excel(matched, split, parse):
 	wb.save("example.xlsx")
 	return sheet
 
-def generate_graph(dot, parse, spans, observed=[], seen=[]):
+def generate_graph(dot, parse, spans, observed=[], seen=[], typesystems=["CONSTRUCTION", "ONTOLOGY", "SCHEMA"]):
 	
 	#s = matched[0]
 	s = parse
@@ -91,7 +91,7 @@ def generate_graph(dot, parse, spans, observed=[], seen=[]):
 		new_label = "{}[{}]".format(str(new.__type__), str(new.__index__))
 		if new_label in spans:
 			new_label += " '{}'".format(" ".join(spans[new_label][0]))
-		if new_label and str(new.__type__) != "None" and key != "features" and new.__type__ != "A123":
+		if new_label and str(new.__type__) != "None" and key not in ["features", "extras", "amount"] and new.__type__ != "A123" and new.__typesystem__ in typesystems:
 			if new.__typesystem__ == "SCHEMA":
 				dot.node(new_label, new_label, color="red")
 			elif new.__typesystem__ == "CONSTRUCTION":
@@ -103,7 +103,7 @@ def generate_graph(dot, parse, spans, observed=[], seen=[]):
 			if new.has_filler() and not new.index() in seen and not new_label in observed:# and new.__typesystem__ == "CONSTRUCTION":
 				observed.append(new_label)
 				seen.append(new.index())
-				g = generate_graph(Digraph(), new, spans, observed, seen)
+				g = generate_graph(Digraph(), new, spans, observed, seen, typesystems)
 				dot.subgraph(g)
 	return dot
 
@@ -113,7 +113,9 @@ def generate_graph(dot, parse, spans, observed=[], seen=[]):
 analyzer = Analyzer("http://localhost:8090")
 
 
-sentence = "the money was embezzled by the politician"
+sentence = "the facility makes weapons in the Saar Valley"
+#sentence = "the man made the weapons business in Elbonia"
+#sentence = "the man made the weapons business in Elbonia"
 split = split_sentence(sentence)
 
 info = analyzer.full_parse(sentence)
@@ -122,7 +124,7 @@ parse, spans = info['parse'], info['spans']
 s = match_spans2(split, spans[0])
 
 dot = Digraph()
-graph = generate_graph(dot, parse[0], s)
+graph = generate_graph(dot, parse[0], s, typesystems=["CONSTRUCTION"])
 #graph.render('label_test/semspec.gv', view=True)
 
 
