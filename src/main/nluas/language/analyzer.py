@@ -101,7 +101,11 @@ class Analyzer(object):
 
         def convert_span(span, fs):
             """ Return span, like (0, 4), name of cxn, and slot ID for cxn. """
-            return {'span': (span.left, span.right), 'type': span.getType().getName(), 'id': fs.getSlot(span.slotID).slotIndex}
+            if span.getType():
+                name = span.getType().getName()
+            else:
+                name = "None" # TODO
+            return {'span': (span.left, span.right), 'type': name, 'id': fs.getSlot(span.slotID).slotIndex}
 
         def get_spans(parses):
             all_spans = []

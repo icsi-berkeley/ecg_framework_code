@@ -91,7 +91,9 @@ def generate_graph(dot, parse, spans, observed=[], seen=[], typesystems=["CONSTR
 		new_label = "{}[{}]".format(str(new.__type__), str(new.__index__))
 		if new_label in spans:
 			new_label += " '{}'".format(" ".join(spans[new_label][0]))
-		if new_label and str(new.__type__) != "None" and key not in ["features", "extras", "amount"] and new.__type__ != "A123" and new.__typesystem__ in typesystems:
+		if s.__typesystem__ == "CONSTRUCTION" and new.__typesystem__ == "SCHEMA" and key != "m":
+			continue
+		if new_label and str(new.__type__) != "None" and key not in ["features", "Features", "rd", "extras", "amount"] and new.__type__ != "A123" and new.__typesystem__ in typesystems:
 			if new.__typesystem__ == "SCHEMA":
 				dot.node(new_label, new_label, color="red")
 			elif new.__typesystem__ == "CONSTRUCTION":
@@ -112,10 +114,12 @@ def generate_graph(dot, parse, spans, observed=[], seen=[], typesystems=["CONSTR
 
 analyzer = Analyzer("http://localhost:8090")
 
-
-sentence = "the facility makes weapons in the Saar Valley"
+#sentence = "they shipped the tubing to Elbonia" # use FrameNet grammar
+sentence = "what country could provide this service?" # Use "core"
+#sentence = "what country could provide this service?" # Use "core"
 #sentence = "the man made the weapons business in Elbonia"
 #sentence = "the man made the weapons business in Elbonia"
+# BAD SENTENCE = "Mr. King was not enrolled in any courses for credit"
 split = split_sentence(sentence)
 
 info = analyzer.full_parse(sentence)
@@ -124,7 +128,7 @@ parse, spans = info['parse'], info['spans']
 s = match_spans2(split, spans[0])
 
 dot = Digraph()
-graph = generate_graph(dot, parse[0], s, typesystems=["CONSTRUCTION"])
+graph = generate_graph(dot, parse[0], s, typesystems=["CONSTRUCTION", "SCHEMA"])
 #graph.render('label_test/semspec.gv', view=True)
 
 
