@@ -50,6 +50,7 @@ class CoreProblemSolver(CoreAgent):
         self.p_features = None
         self.eventFeatures=None
 
+
     def setup_solver_parser(self):
         parser = argparse.ArgumentParser()
         parser.add_argument("-c", "--complexity", default=1, type=check_complexity, help="indicate level of complexity: 1, 2, or 3.")

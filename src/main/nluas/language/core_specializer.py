@@ -69,7 +69,7 @@ class CoreSpecializer(UtilitySpecializer):
 
     def specialize_fragment(self, fs):
         """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """
-        if not hasattr(fs, "m"):
+        if not hasattr(fs, "m") or fs.m == "None":
             return None
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "RD"):
             return self.get_objectDescriptor(fs.m)
@@ -77,6 +77,11 @@ class CoreSpecializer(UtilitySpecializer):
             return self.specialize_event(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Process"):
             return self.fill_parameters(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "SPG"):
+            return self.get_spgDescriptor(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "TrajectorLandmark"):
+            return {"locationDescriptor": {"relation": self.get_locationDescriptor(fs.m.profiledArea),
+                                            "objectDescriptor": self.get_objectDescriptor(fs.m.landmark)}}
         else:
             print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
 
@@ -238,12 +243,15 @@ class CoreSpecializer(UtilitySpecializer):
             elif "eventDescription" in value and hasattr(input_schema, value['eventDescription']):
                 return self.specialize_event(getattr(input_schema, value['eventDescription']))
         elif value and hasattr(input_schema, key):
-            attribute = getattr(input_schema, key) 
+            attribute = getattr(input_schema, key)
             if attribute.type() == "scalarValue":
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
-            return attribute.type()
+            if attribute.type() != "None":
+                return attribute.type()
+            elif attribute.__value__ != "None":
+                return attribute.__value__
         #return value  # TODO: Which one to return? Default or None?
         return final_value
 
@@ -285,23 +293,24 @@ class CoreSpecializer(UtilitySpecializer):
         predication = {}
         state = eventProcess.state
         predication['negated'] = False
-        if hasattr(state, "negated") and state.negated.type():
-            predication['negated'] = self.get_negated(state.negated.type())
-        if self.analyzer.issubtype("SCHEMA", state.type(), "ComparativeAdjModifier"):
-            predication['base'] = self.get_objectDescriptor(state.base)
-            predication.update(self.get_property(state))
-            #predication['ground'] = self.get_objectDescriptor(state.ground)
-        elif self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
-            predication.update(self.get_property(state))
-            self.check_compatibility(predication)
-        elif self.analyzer.issubtype("SCHEMA", state.type(), "RD"):
-            predication['amount'] = self.get_scaleDescriptor(state)
-            self.check_compatibility(predication['amount'])
-        elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
-            predication['relation']= self.get_locationDescriptor(state.profiledArea)
-            predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
-        elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
-            predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
+        if state.type():
+            if hasattr(state, "negated") and state.negated.type():
+                predication['negated'] = self.get_negated(state.negated.type())
+            if self.analyzer.issubtype("SCHEMA", state.type(), "ComparativeAdjModifier"):
+                predication['base'] = self.get_objectDescriptor(state.base)
+                predication.update(self.get_property(state))
+                #predication['ground'] = self.get_objectDescriptor(state.ground)
+            elif self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
+                predication.update(self.get_property(state))
+                self.check_compatibility(predication)
+            elif self.analyzer.issubtype("SCHEMA", state.type(), "RD"):
+                predication['amount'] = self.get_scaleDescriptor(state)
+                self.check_compatibility(predication['amount'])
+            elif self.analyzer.issubtype("SCHEMA", state.type(), "TrajectorLandmark"):
+                predication['relation']= self.get_locationDescriptor(state.profiledArea)
+                predication['objectDescriptor'] = self.get_objectDescriptor(state.landmark)
+            elif self.analyzer.issubtype('SCHEMA', state.type(), 'RefIdentity'):
+                predication['identical']= {'objectDescriptor': self.get_objectDescriptor(state.second)}
         return predication
 
     def check_compatibility(self, predication):
@@ -335,7 +344,8 @@ class CoreSpecializer(UtilitySpecializer):
             od = self.get_objectDescriptor(value)
             self._stacked.append({'objectDescriptor': od})
             return {'objectDescriptor': od}
-        if value.type() == "RD":
+        if value.type() == "RD":# and value.ontological_category.type() == "region":
+            #return {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
             return {'objectDescriptor': self.get_objectDescriptor(value)}
 
         return final

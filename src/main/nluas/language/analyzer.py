@@ -119,7 +119,7 @@ class Analyzer(object):
 
         parses = self.get_parses(sentence)
         
-        return {'parse': [as_sequence(p) for p in parses], 'spans': get_spans(parses)}
+        return {'parse': [as_sequence(p) for p in parses], 'costs': [p.cost for p in parses], 'spans': get_spans(parses)}
 
 
 

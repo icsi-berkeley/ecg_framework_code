@@ -24,12 +24,18 @@ while True:
         cs.debug_mode = True
     else:
         try:
-            semspecs = analyzer.parse(text)
-            for fs in semspecs:
+            full_parse = analyzer.full_parse(text)
+            semspecs = full_parse['parse']
+            costs = full_parse['costs']
+            for i in range(len(semspecs)):
                 try:
+                    fs = semspecs[i]
+                    cost = costs[i]
                     ntuple = cs.specialize(fs)
                     #decoder.pprint_ntuple(ntuple)
                     #print(ntuple)
+                    print("\n")
+                    print("SemSpec Cost: {}".format(str(cost)))
                     pprint.pprint(ntuple)
                     break
                 except Exception as e:

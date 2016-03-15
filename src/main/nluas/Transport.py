@@ -285,7 +285,7 @@ class Transport():
 
             if eventtype == 'ENTER':
                 # Changed
-                url = event[3].decode('utf-8')
+                url = event[4].decode('utf-8')
                 self._ENTER(sid, name, url)
             elif eventtype == 'JOIN':
                 channel = event[3].decode('utf-8')
