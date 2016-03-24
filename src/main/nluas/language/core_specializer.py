@@ -185,17 +185,21 @@ class CoreSpecializer(UtilitySpecializer):
         If none are found, it chooses a parent template ("Motion", "Process", etc.).
         For each item in the template, it calls fill_value. """
         process = eventProcess.type()
+        template_name = process
         if process in self.parameter_templates:
             template = self.parameter_templates[process]
         elif self.check_parameter_subtypes(process, self.parameter_templates):
             subtype = self.check_parameter_subtypes(process, self.parameter_templates)
+            template_name = subtype
             template = self.parameter_templates[subtype]
         else:
             template = self.parameter_templates["Process"]
+            template_name = "Process"
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
         parameters['frame'] = process    # Maybe make this part of template?
+        parameters['template'] = template_name
         return parameters
 
 
@@ -240,7 +244,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return None
             elif "parameters" in value and hasattr(input_schema, value['parameters']):
                 return self.fill_parameters(getattr(input_schema, value['parameters']))
-            elif "eventDescription" in value and hasattr(input_schema, value['eventDescription']):
+            elif "eventDescription" in value and hasattr(input_schema, value['eventDescription']) and getattr(input_schema, value['eventDescription']).has_filler():
                 return self.specialize_event(getattr(input_schema, value['eventDescription']))
         elif value and hasattr(input_schema, key):
             attribute = getattr(input_schema, key)
@@ -340,13 +344,15 @@ class CoreSpecializer(UtilitySpecializer):
         value = getattr(spg, valueType)
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
-        if value.index() == spg.landmark.index():
+        #if value.index() == spg.landmark.index():
+        #    od = self.get_objectDescriptor(value)
+        #    self._stacked.append({'objectDescriptor': od})
+        #    return {'objectDescriptor': od}
+        if value.type() == "RD":# and value.ontological_category.type() == "region":
+            #return {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
             od = self.get_objectDescriptor(value)
             self._stacked.append({'objectDescriptor': od})
             return {'objectDescriptor': od}
-        if value.type() == "RD":# and value.ontological_category.type() == "region":
-            #return {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
-            return {'objectDescriptor': self.get_objectDescriptor(value)}
 
         return final
 
@@ -370,9 +376,13 @@ class CoreSpecializer(UtilitySpecializer):
         final = {}
         for k, v in features.items():
             if k in e_features.__dir__():
-                value = getattr(e_features, v).type()
+                value_filler = getattr(e_features, v)
+                value = value_filler.type()
                 if k == "negated":
                     final[k] = self.get_negated(value)
+                elif k == "duration":
+                    #TODO: Do this more generally, or in a cleaner way?
+                    final[k] = {'timeUnits': value_filler.timeUnits.type(), 'length': float(value_filler.length.value)}
                 else:
                     final[k] = value
         return final

@@ -137,6 +137,7 @@ class CoreProblemSolver(CoreAgent):
         elif "complexKind" in parameters and parameters['complexKind'] == "causal":
             return self.solve_causal(parameters, predicate)
         else:
+            
             action = parameters['actionary']
             try:
                 self.p_features = parameters['p_features']['processFeatures']

@@ -42,7 +42,9 @@
     "eventFeatures": {
         "modality": "modality",
         "negated": "negated",
-        "tense": "tense"
+        "tense": "tense",
+        "duration": "duration",
+        "telicity": "telicity"
     }
 }
 }

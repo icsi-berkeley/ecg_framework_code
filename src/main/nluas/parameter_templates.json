@@ -15,6 +15,7 @@
     "Communication": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "content": {"eventDescription": "content"},
+        "media": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",
         "listener": {"descriptor": "objectDescriptor"},
         "p_features": {"descriptor": "processFeatures"}
