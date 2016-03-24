@@ -8,6 +8,8 @@ import os
 import sys
 import logging
 
+from collections import OrderedDict
+
 
 class CoreAgent(object):
 
@@ -19,10 +21,17 @@ class CoreAgent(object):
         self.initialize(args[0])
 
     def read_templates(self, filename):
+        """ Sets each template to ordered dict."""
+        #print("Parsing " + filename)
+        base = OrderedDict()
         with open(filename, "r") as data_file:
-            data = json.loads(data_file.read())
+            #data = json.loads(data_file.read())
+            data = json.load(data_file, object_pairs_hook=OrderedDict)
             for name, template in data['templates'].items():
-                self.__dict__[name] = template
+                setattr(self, name, template)
+                base[name] = template
+                #self.__dict__[name] = template
+        return base
 
     def setup_federation(self):
         self.federation = os.environ.get("ECG_FED")
