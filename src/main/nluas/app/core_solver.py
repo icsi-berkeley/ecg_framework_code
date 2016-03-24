@@ -27,6 +27,10 @@ import random
 import sys, traceback
 import json
 
+
+
+path = os.getcwd() + "/src/main/nluas/"
+
 def check_complexity(n):
     s = int(n)
     if s not in [1, 2, 3]:
@@ -49,6 +53,9 @@ class CoreProblemSolver(CoreAgent):
         self.history = list()
         self.p_features = None
         self.eventFeatures=None
+        self.parameter_templates = OrderedDict()
+        self.initialize_templates()
+
 
     def setup_solver_parser(self):
         parser = argparse.ArgumentParser()
@@ -57,6 +64,10 @@ class CoreProblemSolver(CoreAgent):
 
     def callback(self, ntuple):
         self.solve(ntuple)
+
+    def initialize_templates(self):
+        """ Initializes templates from path, set above. """
+        self.parameter_templates = self.read_templates(path+"parameter_templates.json")
 
     def request_clarification(self, ntuple, message="This ntuple requires clarification."):
         new = self.decoder.convert_to_JSON(ntuple)
@@ -106,6 +117,9 @@ class CoreProblemSolver(CoreAgent):
         self.decoder.pprint_ntuple(ntuple)
 
     def solve_assertion(self, ntuple):
+        #parameters = ntuple['eventDescriptor']
+        #self.route_event(parameters, "assertion")
+
         self.decoder.pprint_ntuple(ntuple)
 
     def solve_conditional_imperative(self, ntuple):
@@ -136,6 +150,7 @@ class CoreProblemSolver(CoreAgent):
         elif "complexKind" in parameters and parameters['complexKind'] == "causal":
             return self.solve_causal(parameters, predicate)
         else:
+            template = parameters['template']
             action = parameters['actionary']
             try:
                 self.p_features = parameters['p_features']['processFeatures']
