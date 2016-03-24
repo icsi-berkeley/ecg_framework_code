@@ -181,17 +181,21 @@ class CoreSpecializer(UtilitySpecializer):
         If none are found, it chooses a parent template ("Motion", "Process", etc.).
         For each item in the template, it calls fill_value. """
         process = eventProcess.type()
+        template_name = process
         if process in self.parameter_templates:
             template = self.parameter_templates[process]
         elif self.check_parameter_subtypes(process, self.parameter_templates):
             subtype = self.check_parameter_subtypes(process, self.parameter_templates)
+            template_name = subtype
             template = self.parameter_templates[subtype]
         else:
             template = self.parameter_templates["Process"]
+            template_name = "Process"
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
         parameters['frame'] = process    # Maybe make this part of template?
+        parameters['template'] = template_name
         return parameters
 
 
