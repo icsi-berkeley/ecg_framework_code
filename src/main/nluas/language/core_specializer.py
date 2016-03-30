@@ -198,11 +198,10 @@ class CoreSpecializer(UtilitySpecializer):
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
-        parameters['frame'] = process    # Maybe make this part of template?
+        parameters['schema'] = process    # Maybe make this part of template?
         parameters['template'] = template_name
         if self.analyzer.issubtype("SCHEMA", process, "Process"):
             pointers = self.get_process_modifiers(eventProcess)
-            print(pointers)
             parameters.update(pointers)
         return parameters
 
@@ -215,9 +214,15 @@ class CoreSpecializer(UtilitySpecializer):
             if pointer in allowed_pointers:
                 for mod in mods:
                     if pointer == "ScalarAdverbModifier":
-                        print(repr(mod))
                         prop, value = mod.property.type(), float(mod.value)
                         returned[prop] = value
+                    elif pointer == "AdjunctModification":
+                        modifier = mod.modifier
+                        print(modifier.type())
+                        if modifier.type() == "Accompaniment":
+                            returned["co-participant"] = self.get_objectDescriptor(modifier.co_participant)
+                        elif modifier.type() == "Instrument":
+                            returned["instrument"] = self.get_objectDescriptor(modifier.instrument)
         return returned
 
 

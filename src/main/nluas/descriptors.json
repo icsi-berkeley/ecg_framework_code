@@ -27,7 +27,8 @@
     },
     "Process": {
         "pointers": {
-            "ScalarAdverbModifier": {"property": "property", "value": "value"}
+            "ScalarAdverbModifier": {"property": "property", "value": "value"},
+            "AdjunctModification": ["Accompaniment", "Instrument"]
         }
     },
     "spgDescriptor": {
