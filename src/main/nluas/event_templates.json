@@ -14,7 +14,6 @@
     "EventDescriptor": {
         "profiledParticipant": {"descriptor": "objectDescriptor"},
         "eventProcess": {"parameters": "eventProcess"},
-        "profiledProcess": {"parameters": "profiledProcess"},
         "e_features": {"descriptor": "eventFeatures"}
     }
 }

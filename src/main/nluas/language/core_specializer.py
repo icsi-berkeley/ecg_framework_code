@@ -200,7 +200,26 @@ class CoreSpecializer(UtilitySpecializer):
             parameters[key] = self.fill_value(key, value, eventProcess)
         parameters['frame'] = process    # Maybe make this part of template?
         parameters['template'] = template_name
+        if self.analyzer.issubtype("SCHEMA", process, "Process"):
+            pointers = self.get_process_modifiers(eventProcess)
+            print(pointers)
+            parameters.update(pointers)
         return parameters
+
+    def get_process_modifiers(self, eventProcess):
+        returned = dict()
+        eventProcess.pointers = self.invert_pointers(eventProcess)
+        template = self.descriptor_templates['Process'] if "Process" in self.descriptor_templates else dict()
+        allowed_pointers = template['pointers'] if 'pointers' in template else []
+        for pointer, mods in eventProcess.pointers.items():
+            if pointer in allowed_pointers:
+                for mod in mods:
+                    if pointer == "ScalarAdverbModifier":
+                        print(repr(mod))
+                        prop, value = mod.property.type(), float(mod.value)
+                        returned[prop] = value
+        return returned
+
 
 
     def check_parameter_subtypes(self, process, templates):
@@ -391,7 +410,8 @@ class CoreSpecializer(UtilitySpecializer):
         """ Returns an object descriptor from descriptor template. Uses RD elements, as well as other things pointing to object. """
         if "pointers" not in item.__dir__():
             item.pointers = self.invert_pointers(item)
-        template = self.descriptor_templates['objectDescriptor']
+        template = self.descriptor_templates['objectDescriptor'] if "objectDescriptor" in self.descriptor_templates else dict()
+        allowed_pointers = template['pointers'] if 'pointers' in template else []
         returned = {}
         for k, v in template.items():
             if k not in ["pointers", "description"] and hasattr(item, v):# and getattr(item, v).type():
@@ -401,7 +421,8 @@ class CoreSpecializer(UtilitySpecializer):
         if hasattr(item, "extras"):
             returned.update(self.get_RDExtras(item.extras))
         for pointer, mods in item.pointers.items():
-            if pointer in template['pointers']:
+            
+            if pointer in allowed_pointers:
                 for mod in mods:
                     filler = self.fill_pointer(mod, item)
                     if filler:
@@ -455,6 +476,8 @@ class CoreSpecializer(UtilitySpecializer):
             return None
         elif hasattr(pointer, "trajector") and pointer.trajector.index() != item.index():
             return None
+        elif hasattr(pointer, "possessed") and pointer.possessed.index() != item.index():
+            return None
         else:
             if self.analyzer.issubtype('SCHEMA', pointer.type(), "PropertyModifier"):
                 if pointer.value.type() == "scalarValue":
@@ -478,6 +501,8 @@ class CoreSpecializer(UtilitySpecializer):
                 return dict(identical=dict(objectDescriptor=self.get_objectDescriptor(pointer.second)))
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "PartWhole") and item.index() != pointer.whole.index():
                 return dict(whole=dict(objectDescriptor=self.get_objectDescriptor(pointer.whole)))
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Possession"): # and item.index() != pointer.possessor.index():
+                return dict(possessor=dict(objectDescriptor=self.get_objectDescriptor(pointer.possessor)))
 
 
     def get_processDescriptor(self, process, referent):

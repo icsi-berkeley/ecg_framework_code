@@ -16,13 +16,19 @@
             "PartWhole": {"part": {"descriptor": "objectDescriptor"}},
             "Modification": {"modifier": null},
             "RefIdentity": {"second": "objectDescriptor"},
-            "NounNounModifier": {"modifier": "objectDescriptor"}
+            "NounNounModifier": {"modifier": "objectDescriptor"},
+            "Possession": {"possessor": "objectDescriptor"}
         }
     },
     "RDExtras": {
         "specificWh": "specificWh",
         "event": {"eventDescription": "event"},
         "quantity": {"parameters": "quantity"}
+    },
+    "Process": {
+        "pointers": {
+            "ScalarAdverbModifier": {"property": "property", "value": "value"}
+        }
     },
     "spgDescriptor": {
         "goal": null,

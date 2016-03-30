@@ -132,9 +132,9 @@ class UtilitySpecializer(DebuggingSpecializer):
                         return 'behind' #location = 'behind'
                 elif filler.type() == 'BoundedObject':
                     if filler.interior.index() == goal.index():
-                        if i.m.type() == "TrajectorLandmark":
+                        if hasattr(i, "m") and i.m.type() == "TrajectorLandmark":
                             return "in"
-                        elif i.m.type() == "SPG":
+                        elif hasattr(i, "m") and i.m.type() == "SPG":
                             return 'into'
                 elif filler.type() == "NEAR_Locative":
                     if filler.p.proximalArea.index() == goal.index(): #i.m.profiledArea.index():
