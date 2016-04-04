@@ -17,13 +17,20 @@
             "Modification": {"modifier": null},
             "RefIdentity": {"second": "objectDescriptor"},
             "NounNounModifier": {"modifier": "objectDescriptor"},
-            "Possession": {"possessor": "objectDescriptor"}
+            "Possession": {"possessor": "objectDescriptor"},
+            "Relation": "relationDescriptor"
         }
     },
     "RDExtras": {
         "specificWh": "specificWh",
         "event": {"eventDescription": "event"},
         "quantity": {"parameters": "quantity"}
+    },
+    "relationDescriptor": {
+        "entity2": {"descriptor": "objectDescriptor"},
+        "entity3": {"descriptor": "objectDescriptor"},
+        "entities": {"descriptor": "objectDescriptor"},
+        "relation": "relation"
     },
     "Process": {
         "pointers": {

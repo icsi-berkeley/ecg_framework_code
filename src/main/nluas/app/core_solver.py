@@ -30,6 +30,7 @@ import json
 
 
 path = os.getcwd() + "/src/main/nluas/"
+#path = os.path.dirname(os.path.realpath(__file__))
 
 def check_complexity(n):
     s = int(n)
@@ -40,6 +41,7 @@ def check_complexity(n):
 class CoreProblemSolver(CoreAgent):
 
     def __init__(self, args):
+        self.__path__ = os.getcwd() + "/src/main/nluas/"
         self.ntuple = None
         self.decoder = NtupleDecoder()
         CoreAgent.__init__(self, args)
@@ -54,7 +56,8 @@ class CoreProblemSolver(CoreAgent):
         self.p_features = None
         self.eventFeatures=None
         self.parameter_templates = OrderedDict()
-        self.initialize_templates()
+        #self.initialize_templates()
+        
 
 
     def setup_solver_parser(self):
@@ -67,7 +70,7 @@ class CoreProblemSolver(CoreAgent):
 
     def initialize_templates(self):
         """ Initializes templates from path, set above. """
-        self.parameter_templates = self.read_templates(path+"parameter_templates.json")
+        self.parameter_templates = self.read_templates(self.__path__+"parameter_templates.json")
 
     def request_clarification(self, ntuple, message="This ntuple requires clarification."):
         new = self.decoder.convert_to_JSON(ntuple)

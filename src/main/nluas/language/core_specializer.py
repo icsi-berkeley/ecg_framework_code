@@ -64,7 +64,7 @@ class CoreSpecializer(UtilitySpecializer):
         #self.read_templates
 
     def set_spans(self, spans):
-        """ Sets the current constructional spans to input spans. These are used for referent resolution. (TO DO)."""
+        """ Sets the current constructional spans to input spans. These are used for referent resolution. (TODO)."""
         self.spans = spans
 
     def specialize_fragment(self, fs):
@@ -73,12 +73,17 @@ class CoreSpecializer(UtilitySpecializer):
             return None
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "RD"):
             return self.get_objectDescriptor(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "PropertyModifier"):
+            return self.get_property(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"):
             return self.specialize_event(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Process"):
             return self.fill_parameters(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "SPG"):
             return self.get_spgDescriptor(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Relation"):
+            s = self.get_relationDescriptor(fs.m)
+            return self.get_relationDescriptor(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "TrajectorLandmark"):
             return {"locationDescriptor": {"relation": self.get_locationDescriptor(fs.m.profiledArea),
                                             "objectDescriptor": self.get_objectDescriptor(fs.m.landmark)}}
@@ -135,13 +140,6 @@ class CoreSpecializer(UtilitySpecializer):
             eventProcess = fs.m.content.eventProcess
             ntuple = self.mood_templates[mood]
             ntuple['eventDescriptor'] = self.specialize_event(content)
-            #print(ntuple)
-            #if content.type() in self.event_templates:
-            #    ntuple['parameters'] = [self.specialize_event(content)]
-                #return ntuple
-            #else:
-            #parameters = self.fill_parameters(eventProcess)
-            #ntuple['parameters'] = [parameters]
             if 'eventProcess' in ntuple['eventDescriptor']:
                 parameters = ntuple['eventDescriptor']['eventProcess']
                 if mood == "wh_question":
@@ -198,11 +196,12 @@ class CoreSpecializer(UtilitySpecializer):
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
-        parameters['schema'] = process    # Maybe make this part of template?
-        parameters['template'] = template_name
+
         if self.analyzer.issubtype("SCHEMA", process, "Process"):
             pointers = self.get_process_modifiers(eventProcess)
             parameters.update(pointers)
+            parameters['schema'] = process    # Maybe make this part of template?
+            parameters['template'] = template_name
         return parameters
 
     def get_process_modifiers(self, eventProcess):
@@ -276,10 +275,11 @@ class CoreSpecializer(UtilitySpecializer):
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
-            if attribute.type() != "None":
+            elif attribute.type() != "None" and attribute.type() != None:
                 return attribute.type()
             elif attribute.__value__ != "None":
                 return attribute.__value__
+            print(attribute.__value__)
         #return value  # TODO: Which one to return? Default or None?
         return final_value
 
@@ -411,13 +411,39 @@ class CoreSpecializer(UtilitySpecializer):
                     final[k] = value
         return final
 
+    def get_relationDescriptor(self, relation):
+        """ Returns a relation descriptor, describing in a high-level way the relation between several entities. 
+        The Problem Solver then uses the relation in the application domain's context to determine the actual meaning. """
+        returned = dict()
+        template = self.descriptor_templates["relationDescriptor"] if "relationDescriptor" in self.descriptor_templates else dict()
+        for k, v in template.items():
+            #if hasattr(relation, v) and getattr(relation, v).has_filler():
+            print(k)
+            value = self.fill_value(k, v, relation)
+            #print(value)
+            if value:
+                returned[k] = value
+        return returned
+
+    def get_conjRDDescriptor(self, item, resolving=False):
+        """ Returns a data structure for a ConjRD, such as "the man and the woman". """
+        return dict(conj=True,
+                    first=self.get_objectDescriptor(item.rd1),
+                    second=self.get_objectDescriptor(item.rd2))
+
+
+
     def get_objectDescriptor(self, item, resolving=False):
         """ Returns an object descriptor from descriptor template. Uses RD elements, as well as other things pointing to object. """
+        returned = {}
         if "pointers" not in item.__dir__():
             item.pointers = self.invert_pointers(item)
+        if self.analyzer.issubtype("SCHEMA", item.type(), "ConjRD"):
+            returned = self.get_conjRDDescriptor(item, resolving)
+
         template = self.descriptor_templates['objectDescriptor'] if "objectDescriptor" in self.descriptor_templates else dict()
         allowed_pointers = template['pointers'] if 'pointers' in template else []
-        returned = {}
+        
         for k, v in template.items():
             if k not in ["pointers", "description"] and hasattr(item, v):# and getattr(item, v).type():
                 attribute = getattr(item, v).type()
@@ -426,7 +452,6 @@ class CoreSpecializer(UtilitySpecializer):
         if hasattr(item, "extras"):
             returned.update(self.get_RDExtras(item.extras))
         for pointer, mods in item.pointers.items():
-            
             if pointer in allowed_pointers:
                 for mod in mods:
                     filler = self.fill_pointer(mod, item)
@@ -508,6 +533,8 @@ class CoreSpecializer(UtilitySpecializer):
                 return dict(whole=dict(objectDescriptor=self.get_objectDescriptor(pointer.whole)))
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Possession"): # and item.index() != pointer.possessor.index():
                 return dict(possessor=dict(objectDescriptor=self.get_objectDescriptor(pointer.possessor)))
+            elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Relation") and pointer.entity1.index() == item.index():
+                return dict(relationDescriptor=self.get_relationDescriptor(pointer))
 
 
     def get_processDescriptor(self, process, referent):
