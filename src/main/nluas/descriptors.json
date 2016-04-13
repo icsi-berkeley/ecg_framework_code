@@ -18,7 +18,8 @@
             "RefIdentity": {"second": "objectDescriptor"},
             "NounNounModifier": {"modifier": "objectDescriptor"},
             "Possession": {"possessor": "objectDescriptor"},
-            "Relation": "relationDescriptor"
+            "Relation": "relationDescriptor",
+            "TernaryRelation": "relationDescriptor"
         }
     },
     "RDExtras": {

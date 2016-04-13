@@ -271,7 +271,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return self.specialize_event(getattr(input_schema, value['eventDescription']))
         elif value and hasattr(input_schema, key):
             attribute = getattr(input_schema, key)
-            if attribute.type() == "scalarValue":
+            if attribute.type() in ["scalarValue", "scale"]:
                 return float(attribute)
             elif key == "negated":
                 return self.get_negated(attribute.type())
@@ -285,9 +285,7 @@ class CoreSpecializer(UtilitySpecializer):
 
     def get_negated(self, value):
         """ Returns actual boolean for grammar fillers for negation, "yes"/"no". """
-        if value == "yes":
-            return True
-        return False
+        return value == "yes"
 
     def get_scaleDescriptor(self, scale):
         """ Returns a scaleDescriptor, with unit type, the actual value, and the associated property. """
@@ -368,10 +366,6 @@ class CoreSpecializer(UtilitySpecializer):
         value = getattr(spg, valueType)
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
-        #if value.index() == spg.landmark.index():
-        #    od = self.get_objectDescriptor(value)
-        #    self._stacked.append({'objectDescriptor': od})
-        #    return {'objectDescriptor': od}
         if value.type() == "RD":# and value.ontological_category.type() == "region":
             #return {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
             od = self.get_objectDescriptor(value)
@@ -404,7 +398,7 @@ class CoreSpecializer(UtilitySpecializer):
                 value = value_filler.type()
                 if k == "negated":
                     final[k] = self.get_negated(value)
-                elif k == "duration":
+                elif k == "duration" and value_filler.has_filler():
                     #TODO: Do this more generally, or in a cleaner way?
                     final[k] = {'timeUnits': value_filler.timeUnits.type(), 'length': float(value_filler.length.value)}
                 else:
@@ -418,7 +412,6 @@ class CoreSpecializer(UtilitySpecializer):
         template = self.descriptor_templates["relationDescriptor"] if "relationDescriptor" in self.descriptor_templates else dict()
         for k, v in template.items():
             #if hasattr(relation, v) and getattr(relation, v).has_filler():
-            print(k)
             value = self.fill_value(k, v, relation)
             #print(value)
             if value:

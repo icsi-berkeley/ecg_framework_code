@@ -156,7 +156,9 @@ class CoreProblemSolver(CoreAgent):
             template = parameters['template']
             action = parameters['actionary']
             try:
-                self.p_features = parameters['p_features']['processFeatures']
+                #if "processFeatures" in parameters['p_features']:
+                if parameters['p_features']:
+                    self.p_features = parameters['p_features']['processFeatures']
                 dispatch = getattr(self, "{}_{}".format(predicate, action))
                 return_value = dispatch(parameters)
                 self.history.insert(0, (parameters, True))
