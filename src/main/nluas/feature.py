@@ -76,6 +76,9 @@ class Feature(object):
         else:
             return False
 
+    def __nonzero__(self):
+        return self.__bool__()
+
         #return self.__value__ != None
 
     def has_filler(self):

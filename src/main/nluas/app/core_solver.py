@@ -29,8 +29,8 @@ import json
 
 
 
-path = os.getcwd() + "/src/main/nluas/"
-#path = os.path.dirname(os.path.realpath(__file__))
+#path = os.getcwd() + "/src/main/nluas/"
+path = os.path.dirname(os.path.realpath(__file__))
 
 def check_complexity(n):
     s = int(n)
