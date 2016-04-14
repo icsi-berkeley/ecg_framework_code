@@ -196,7 +196,6 @@ class CoreSpecializer(UtilitySpecializer):
         parameters = dict()
         for key, value in template.items():
             parameters[key] = self.fill_value(key, value, eventProcess)
-
         if self.analyzer.issubtype("SCHEMA", process, "Process"):
             pointers = self.get_process_modifiers(eventProcess)
             parameters.update(pointers)
