@@ -14,6 +14,13 @@ import json
 import time
 from collections import OrderedDict
 
+# Kind of hacky, but it should make this work with both Python2 and Python3.
+try:
+    input = raw_input
+except NameError as e:
+    #print("We're running Python3, so we're already good.")
+    pass
+
 class WaitingException(Exception):
     def __init__(self, message):
         self.message = message

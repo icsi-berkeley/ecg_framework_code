@@ -11,6 +11,15 @@ from nluas.ntuple_decoder import *
 import traceback
 import pprint
 
+"""
+try:
+    input = raw_input
+except NameError as e:
+    print("We're running Python3, so we're already good.")
+"""
+
+from six.moves import input
+
 decoder = NtupleDecoder()
 
 analyzer = Analyzer("http://localhost:8090")
