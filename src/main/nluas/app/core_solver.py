@@ -13,11 +13,9 @@ or "solve_push_move", etc.
 
 Author: seantrott <seantrott@icsi.berkeley.edu>
 
-
-
-"check_for_clarification" should check ntuple and determine if everything is
-specified enough. This implementation will depend on a solver's world model,
-but the schematic implementation can be implemented here.
+------
+See LICENSE.txt for licensing information.
+------
 
 """
 

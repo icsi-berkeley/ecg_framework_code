@@ -4,6 +4,11 @@
 
 .. moduleauthor:: Luca Gilardi <lucag@icsi.berkeley.edu>
 
+
+------
+See LICENSE.txt for licensing information.
+------
+
 """
 
 import sys

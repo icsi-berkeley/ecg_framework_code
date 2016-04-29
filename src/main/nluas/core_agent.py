@@ -1,5 +1,12 @@
 """
 Author: seantrott <seantrott@icsi.berkeley.edu>
+
+Defines a CoreAgent, which uses the Transport module. Can be initialized
+by just feeding it a channel name. All "Agents" inherit from the CoreAgent. 
+
+------
+See LICENSE.txt for licensing information.
+------
 """
 
 from nluas.Transport import *

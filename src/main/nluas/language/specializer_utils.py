@@ -4,11 +4,13 @@
 
 .. moduleauthor:: Sean Trott <seantrott@icsi.berkeley.edu>
 
+
+------
+See LICENSE.txt for licensing information.
+------
+
 """
 
-
-""" ADDED STUFF """
-"""*****"""
 
 import sys, traceback
 import copy

@@ -24,9 +24,9 @@ As a general rule for template-building:
   the value in the template should be the role name.
 * QUESTION: if no value is found, should fill_value return the "value" in the template, or None? (probably the former?)
 
-NOTES / TODO:
-* Referent resolution for embedded phrases ("is box1 near the box" "which box" "the blue one" --> should resolve with blue box, not box1)
-* Better specialization of sentence fragments
+------
+See LICENSE.txt for licensing information.
+------
 
 """
 

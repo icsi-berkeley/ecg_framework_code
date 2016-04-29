@@ -31,6 +31,11 @@
 # you want to do multiple federations, use e.g.:
 # t = Transport(name, prefix='foo')
 
+
+# ------
+# See LICENSE.txt for licensing information.
+# ------
+
 from __future__ import print_function
 
 import collections

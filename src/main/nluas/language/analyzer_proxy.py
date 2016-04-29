@@ -2,6 +2,10 @@
 
 Author: seantrott <seantrott@icsi.berkeley.edu>
 
+------
+See LICENSE.txt for licensing information.
+------
+
 """
 try:
     # Python 2?

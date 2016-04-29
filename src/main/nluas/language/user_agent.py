@@ -1,6 +1,21 @@
 
 """
+The User-Agent (also called UI-Agent, Agent-UI) receives text/speech
+as input, and produces an n-tuple, which it sends to a ProblemSolver. 
+It feeds the text through the ECG Analyzer (running on a local server)
+to produce a SemSpec, which it then runs through the CoreSpecializer to produce
+the n-tuple. 
+
+Interaction with the user is modulated through the output_stream method, which
+allows designers to subclass the User-Agent and define a new mode of interaction.
+
+
 Author: seantrott <seantrott@icsi.berkeley.edu>
+
+
+------
+See LICENSE.txt for licensing information.
+------
 
 """
 
