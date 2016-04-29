@@ -100,6 +100,7 @@ class CoreProblemSolver(CoreAgent):
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
                 self.broadcast()
+                self.p_features = None # Testing, took it out from route_action
             except AttributeError as e:
                 traceback.print_exc()
                 message = "I cannot solve a(n) {}.".format(predicate_type)
@@ -145,6 +146,7 @@ class CoreProblemSolver(CoreAgent):
                 self.respond_to_query(return_value)
             elif predicate == "command":
                 self.return_error_descriptor(return_value)
+                return return_value
 
 
     def route_action(self, parameters, predicate):

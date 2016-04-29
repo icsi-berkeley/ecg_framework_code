@@ -53,7 +53,6 @@ class UserAgent(CoreAgent):
         while not connected:
             try:
                 self.initialize_analyzer()
-                self.initialize_specializer()
                 connected = True
             except ConnectionRefusedError as e:
                 if not printed:
@@ -61,6 +60,12 @@ class UserAgent(CoreAgent):
                     self.output_stream(self.name, message)
                     printed = True
                 time.sleep(1)
+            try:
+                self.initialize_specializer()
+            except TemplateException as e:
+                self.output_stream(self.name, e.message)
+                self.transport.quit_federation()
+                quit()
         self.decoder = NtupleDecoder()
         #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
@@ -91,14 +96,13 @@ class UserAgent(CoreAgent):
                     span = spans[index]
                     matched = self.match_spans(span, msg)
                     self.specializer.set_spans(matched)
-
                     ntuple = self.specializer.specialize(fs)
 
                     json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     return json_ntuple
                 except Exception as e:
                     self.output_stream(self.name, e)
-                    traceback.print_exc()
+                    #traceback.print_exc()
                     index += 1
         except Exception as e:
             print(e)

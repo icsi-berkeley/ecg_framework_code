@@ -19,7 +19,8 @@
             "NounNounModifier": {"modifier": "objectDescriptor"},
             "Possession": {"possessor": "objectDescriptor"},
             "Relation": "relationDescriptor",
-            "TernaryRelation": "relationDescriptor"
+            "TernaryRelation": "relationDescriptor",
+            "MetaphoricalScalarModification": {"property": "value"}
         }
     },
     "RDExtras": {

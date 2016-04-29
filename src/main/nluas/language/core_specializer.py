@@ -101,14 +101,37 @@ class CoreSpecializer(UtilitySpecializer):
         """ Sets each template to ordered dict."""
         #print("Parsing " + filename)
         base = OrderedDict()
+        # Add basic information from templates
         with open(filename, "r") as data_file:
             #data = json.loads(data_file.read())
             data = json.load(data_file, object_pairs_hook=OrderedDict)
             for name, template in data['templates'].items():
                 setattr(self, name, template)
                 base[name] = template
-                #self.__dict__[name] = template
+        # Add information from parents for each template
+        # Overriding rules: choose child key/value pair if key is in both child and parent
+        for name, template in base.items():
+            if "parents" in template:
+                for parent in template['parents']:
+                    if parent in base:
+                        template = self.unify_templates(template, base[parent])
+                    else:
+                        raise TemplateException("Formatting issue with template definition for '{}'. Listed parent '{}' does not exist.".format(name, parent))
+                        # Throw exception
+                template.pop("parents")
         return base
+
+    def unify_templates(self, child, parent):
+        """ Unifies a child and parent template. Adds all parent key-value pairs 
+        unless the key already exists in the child. """
+        child.update({key:value for (key, value) in parent.items() if key not in child})
+        return child
+        """
+        for k, v in parent.items():
+            if k not in child:
+                child.update({k: v})
+        return child
+        """
 
     def specialize_event(self, content):
         """ Takes in an EventDescriptor, and uses event_templates to drive specialization. 
@@ -136,6 +159,10 @@ class CoreSpecializer(UtilitySpecializer):
         else:
             self.fs = fs
             mood = str(fs.m.mood).replace("-", "_").lower()
+            if hasattr(fs.m, "addressee"):
+                addressee = self.get_objectDescriptor(fs.m.addressee) # and fs.m.addressee.has_filler()
+                if "referent" in addressee:
+                    self.addressees.append({'objectDescriptor': addressee})
             content = fs.m.content
             eventProcess = fs.m.content.eventProcess
             ntuple = self.mood_templates[mood]
@@ -432,7 +459,7 @@ class CoreSpecializer(UtilitySpecializer):
             item.pointers = self.invert_pointers(item)
         if self.analyzer.issubtype("SCHEMA", item.type(), "ConjRD"):
             returned = self.get_conjRDDescriptor(item, resolving)
-
+    
         template = self.descriptor_templates['objectDescriptor'] if "objectDescriptor" in self.descriptor_templates else dict()
         allowed_pointers = template['pointers'] if 'pointers' in template else []
         
@@ -459,6 +486,8 @@ class CoreSpecializer(UtilitySpecializer):
                 return self.resolve_referents(returned)['objectDescriptor']
             elif item.referent.type() == "anaphora" and not resolving:
                 return self.resolve_anaphoricOne(item)['objectDescriptor']
+            elif returned['referent'] == "addressee":
+                return self.resolve_referents(returned, antecedents=self.addressees)['objectDescriptor']
         return returned
 
 
@@ -501,6 +530,9 @@ class CoreSpecializer(UtilitySpecializer):
         elif hasattr(pointer, "possessed") and pointer.possessed.index() != item.index():
             return None
         else:
+            #if self.analyzer.issubtype("SCHEMA", pointer.type(), "MetaphoricalScalarModification"):
+            #    value = float(pointer.value) if pointer.value.type() == "scalarValue" else pointer.value.type()
+            #    return {pointer.property.type(): value, "metaphor": {"source": pointer.met.source.type(), "name": pointer.met.name.type()}}
             if self.analyzer.issubtype('SCHEMA', pointer.type(), "PropertyModifier"):
                 if pointer.value.type() == "scalarValue":
                     return {pointer.property.type(): float(pointer.value)}
@@ -510,6 +542,7 @@ class CoreSpecializer(UtilitySpecializer):
                 landmark = self.get_objectDescriptor(pointer.landmark)
                 return {'locationDescriptor': {'relation': relation,
                                                'objectDescriptor': landmark}}
+
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "EventDescriptor") and self.event and hasattr(pointer, "modifiedThing"):
                 self.event = False
                 process= {'processDescriptor': self.get_processDescriptor(pointer.eventProcess, item)}

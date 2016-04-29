@@ -72,6 +72,10 @@ class MoodException(FeatureStructException):
         self.message = message
 
 
+class TemplateException(Exception):
+    def __init__(self, message):
+        self.message = message
+
 class UtilitySpecializer(DebuggingSpecializer):
     def __init__(self, analyzer):
         self._stacked = []
@@ -81,6 +85,8 @@ class UtilitySpecializer(DebuggingSpecializer):
         #self.mapping_reader.read_file(self.analyzer.get_mapping_path())
         self.mappings = self.analyzer.get_mappings()
         self.event = True
+        self.addressees = list() # For discourse analysis, distinct from _stacked list, which is used for general referent resolution
+
 
 
     def is_compatible(self, typesystem, role1, role2):
@@ -198,10 +204,13 @@ class UtilitySpecializer(DebuggingSpecializer):
                 new[key] = old[key]
         return new
 
+
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
     antecedents. """
-    def resolve_referents(self, item, actionary=None, pred=None):
-        popper = list(self._stacked)
+    def resolve_referents(self, item, antecedents = None, actionary=None, pred=None):
+        if antecedents is None:
+            antecedents = self._stacked
+        popper = list(antecedents)
         while len(popper) > 0:
             ref = popper.pop()
             if self.resolves(ref, actionary, pred) and self.compatible_referents(item, ref['objectDescriptor']):

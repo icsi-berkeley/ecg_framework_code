@@ -2,9 +2,10 @@
 "templates": {
     "ConditionalED": {
         "condition": {"eventDescription": "ed1"},
-        "core": {"eventDescription": "ed2"},
-        "else": {"eventDescription": "ed3"},
-        "complexKind": "complexKind"
+        "conclusion": {"eventDescription": "ed2"},
+        "alternative": {"eventDescription": "ed3"},
+        "complexKind": "complexKind",
+        "conditionalValue": "conditionalValue"
     },
     "ComplexED": {
         "condition": {"eventDescription": "ed1"},
