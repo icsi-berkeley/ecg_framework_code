@@ -68,6 +68,7 @@ class UserAgent(CoreAgent):
         while not connected:
             try:
                 self.initialize_analyzer()
+                self.initialize_specializer()
                 connected = True
             except ConnectionRefusedError as e:
                 if not printed:
@@ -75,12 +76,8 @@ class UserAgent(CoreAgent):
                     self.output_stream(self.name, message)
                     printed = True
                 time.sleep(1)
-            try:
-                self.initialize_specializer()
-            except TemplateException as e:
-                self.output_stream(self.name, e.message)
-                self.transport.quit_federation()
-                quit()
+        #print(connected)
+
         self.decoder = NtupleDecoder()
         #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
 
@@ -88,7 +85,12 @@ class UserAgent(CoreAgent):
         self.analyzer = Analyzer(self.analyzer_port)
         
     def initialize_specializer(self):
-        self.specializer=CoreSpecializer(self.analyzer)
+        try:
+            self.specializer=CoreSpecializer(self.analyzer)
+        except TemplateException as e:
+            self.output_stream(self.name, e.message)
+            self.transport.quit_federation()
+            quit()
 
     def match_spans(self, spans, sentence):
         sentence = sentence.replace(".", " . ").replace(",", " , ").replace("!", " ! ").split(" ")

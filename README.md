@@ -4,6 +4,8 @@ Core Framework code for NLU system, can be extended for different tasks.
 * General description of original system: https://www.icsi.berkeley.edu/pubs/ai/naturallanguage15.pdf
 * Extension/Implementation for multi-agent collaboration: ftp://ftp.icsi.berkeley.edu/pub/feldman/AI-HRI.pdf
 
+See the [Wiki](https://github.com/icsi-berkeley/framework_code/wiki/Framework_code-Overview) for more detailed information on this code.
+
 System requirements:
 
 * PyEnchant: http://pythonhosted.org/pyenchant/ 

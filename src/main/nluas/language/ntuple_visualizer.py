@@ -6,7 +6,7 @@ A simple program to output n-tuples using Analyzer+Specializer. Not reliant on a
 
 """
 
-from core_specializer import *
+from nluas.language.core_specializer import *
 from nluas.ntuple_decoder import *
 import traceback
 import pprint

@@ -83,8 +83,6 @@ class UtilitySpecializer(DebuggingSpecializer):
         self._stacked = []
         DebuggingSpecializer.__init__(self)
         self.analyzer = analyzer
-        #self.mapping_reader = MappingReader()
-        #self.mapping_reader.read_file(self.analyzer.get_mapping_path())
         self.mappings = self.analyzer.get_mappings()
         self.event = True
         self.addressees = list() # For discourse analysis, distinct from _stacked list, which is used for general referent resolution
