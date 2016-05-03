@@ -30,11 +30,7 @@ import time
 from collections import OrderedDict
 
 # Kind of hacky, but it should make this work with both Python2 and Python3.
-try:
-    input = raw_input
-except NameError as e:
-    #print("We're running Python3, so we're already good.")
-    pass
+from six.moves import input
 
 class WaitingException(Exception):
     def __init__(self, message):
