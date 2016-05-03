@@ -125,7 +125,6 @@ class UserAgent(CoreAgent):
             print(e)
 
     def output_stream(self, tag, message):
-        # Should actually just print to self._out
         print("{}: {}".format(tag, message))
 
     def callback(self, ntuple):
