@@ -29,7 +29,7 @@ import json
 import time
 from collections import OrderedDict
 
-# Kind of hacky, but it should make this work with both Python2 and Python3.
+# Makes this work with both py2 and py3
 from six.moves import input
 
 class WaitingException(Exception):
