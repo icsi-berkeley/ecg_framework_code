@@ -38,13 +38,9 @@ class WaitingException(Exception):
 
 class UserAgent(CoreAgent):
     def __init__(self, args):
-        #self.ui_parser = self.setup_ui_parser()
-
-
         CoreAgent.__init__(self, args)
         self.initialize_UI()
         #self.ui_parser = self.setup_ui_parser()
-        #self.analyzer_port = self.unknown[0]
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
         self.transport.subscribe(self.solve_destination, self.callback)
 
@@ -72,7 +68,6 @@ class UserAgent(CoreAgent):
                     self.output_stream(self.name, message)
                     printed = True
                 time.sleep(1)
-        #print(connected)
 
         self.decoder = NtupleDecoder()
         #self.spell_checker = SpellChecker(self.analyzer.get_lexicon())
@@ -101,8 +96,6 @@ class UserAgent(CoreAgent):
             full_parse = self.analyzer.full_parse(msg)
             semspecs = full_parse['parse']
             spans = full_parse['spans']
-            
-            #semspecs = self.analyzer.parse(msg)
             index = 0
             for fs in semspecs:
                 try:
