@@ -185,5 +185,9 @@ class CoreProblemSolver(CoreAgent):
         #return random.choice([True, False])
         return False
 
+    def solve_serial(self, parameters, predicate):
+        self.route_action(parameters['process1'], predicate)
+        self.route_action(parameters['process2'], predicate)
+
 if __name__ == '__main__':
     ps = CoreProblemSolver(sys.argv[1:])
