@@ -105,6 +105,14 @@
         "process2": {"parameters": "process2"},
         "complexKind": "complexKind"
     },
+    "BoundedRegion": {
+        "interior": {"descriptor": "objectDescriptor"},
+        "exterior": {"descriptor": "objectDescriptor"},
+        "boundary": {"descriptor": "objectDescriptor"}
+    },
+    "Entity": {
+        "entityType": "entityType"
+    },
     "Process": {
         "protagonist": {"descriptor": "objectDescriptor"},
         "actionary": "actionary",

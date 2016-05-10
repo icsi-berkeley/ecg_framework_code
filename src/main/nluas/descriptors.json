@@ -1,13 +1,14 @@
 {
 "templates": {
     "objectDescriptor": {
-        "type": "ontological_category",
+        "ontological_category": "ontological_category",
         "referent": "referent",
         "givenness": "givenness",
         "number": "number",
         "specificWh": "specificWh",
         "description": {"parameters": "description"},
         "gender": "gender",
+        "extensions": {"parameters": "extensions"},
         "pointers": {
             "PropertyModifier": {"property": "value"},
             "ScalarModifier": {"property": "value"},

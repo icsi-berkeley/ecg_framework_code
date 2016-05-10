@@ -226,8 +226,8 @@ class CoreSpecializer(UtilitySpecializer):
         if self.analyzer.issubtype("SCHEMA", process, "Process"):
             pointers = self.get_process_modifiers(eventProcess)
             parameters.update(pointers)
-            parameters['schema'] = process    # Maybe make this part of template?
-            parameters['template'] = template_name
+        parameters['schema'] = process    # Maybe make this part of template?
+        parameters['template'] = template_name
         return parameters
 
     def get_process_modifiers(self, eventProcess):
@@ -291,7 +291,7 @@ class CoreSpecializer(UtilitySpecializer):
                 if "default" in value:
                     return value['default']
                 return None
-            elif "parameters" in value and hasattr(input_schema, value['parameters']):
+            elif "parameters" in value and hasattr(input_schema, value['parameters']) and getattr(input_schema, value['parameters']).has_filler():
                 return self.fill_parameters(getattr(input_schema, value['parameters']))
             elif "eventDescription" in value and hasattr(input_schema, value['eventDescription']) and getattr(input_schema, value['eventDescription']).has_filler():
                 return self.specialize_event(getattr(input_schema, value['eventDescription']))
@@ -392,12 +392,19 @@ class CoreSpecializer(UtilitySpecializer):
         value = getattr(spg, valueType)
         if value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
-        if value.type() == "RD":# and value.ontological_category.type() == "region":
-            #return {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
+        elif value.ontological_category.type() == "region":
+            landmark = {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
+            value_filler = {'objectDescriptor': self.get_objectDescriptor(value)}
+            extensions = spg.landmark.extensions
+            s = self.get_locationDescriptor(spg.landmark)
+            value_filler['landmark'] = landmark
+            # TODO: figure out n-tuple for "into", etc...
+            # The problem is the semantics actually comes from the role name ("interior", etc.)
+            #return value_filler
+        elif value.type() == "RD":
             od = self.get_objectDescriptor(value)
             self._stacked.append({'objectDescriptor': od})
             return {'objectDescriptor': od}
-
         return final
 
 
@@ -464,8 +471,11 @@ class CoreSpecializer(UtilitySpecializer):
         allowed_pointers = template['pointers'] if 'pointers' in template else []
         
         for k, v in template.items():
-            if k not in ["pointers", "description"] and hasattr(item, v):# and getattr(item, v).type():
-                attribute = getattr(item, v).type()
+            if k not in ["pointers", "description"] and hasattr(item, k):# and getattr(item, v).type():
+                #attribute = getattr(item, v).type()
+                attribute = self.fill_value(k, v, item)
+                if k == "ontological_category":
+                    k = "type"
                 if attribute:
                     returned[k] = attribute
         if hasattr(item, "extras"):
