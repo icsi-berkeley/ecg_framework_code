@@ -330,7 +330,7 @@ class CoreSpecializer(UtilitySpecializer):
                 value = float(pm.value)
             returned[pm.property.type()] = value
             returned['property'] = pm.property.type()
-        if hasattr(pm, "direction"):
+        if hasattr(pm, "direction") and pm.direction.has_type():
             returned['direction'] = pm.direction.type()
         elif self.analyzer.issubtype("ONTOLOGY", pm.property.type(), "scale") and kind == "comparative":
             if value > .5:
@@ -349,7 +349,7 @@ class CoreSpecializer(UtilitySpecializer):
             if hasattr(state, "negated") and state.negated.type():
                 predication['negated'] = self.get_negated(state.negated.type())
             if self.analyzer.issubtype("SCHEMA", state.type(), "ComparativeAdjModifier"):
-                predication['base'] = self.get_objectDescriptor(state.base)
+                predication['base'] = {'objectDescriptor': self.get_objectDescriptor(state.base)}
                 predication.update(self.get_property(state))
                 #predication['ground'] = self.get_objectDescriptor(state.ground)
             elif self.analyzer.issubtype("SCHEMA", state.type(), "PropertyModifier"):
@@ -398,6 +398,8 @@ class CoreSpecializer(UtilitySpecializer):
             extensions = spg.landmark.extensions
             s = self.get_locationDescriptor(spg.landmark)
             value_filler['landmark'] = landmark
+            final['locationDescriptor'] = {'objectDescriptor': self.get_objectDescriptor(spg.landmark), 'relation': self.get_locationDescriptor(value)}
+            return final
             # TODO: figure out n-tuple for "into", etc...
             # The problem is the semantics actually comes from the role name ("interior", etc.)
             #return value_filler

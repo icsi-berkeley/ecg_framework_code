@@ -114,6 +114,9 @@ class Feature(object):
     def __json__(self):
         return self.__dict__
 
+    def has_type(self):
+        return self.__type__ != None
+
 
 class StructJSONEncoder(JSONEncoder):
     def default(self, x):
