@@ -305,7 +305,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return attribute.type()
             elif attribute.__value__ != "None":
                 return attribute.__value__
-            print(attribute.__value__)
+            
         #return value  # TODO: Which one to return? Default or None?
         return final_value
 
@@ -390,7 +390,9 @@ class CoreSpecializer(UtilitySpecializer):
         """ returns actual SPG value. """
         final = {}
         value = getattr(spg, valueType)
-        if value.ontological_category.type() == "location":
+        if value.type() == "home":
+            return {'location':"home"} 
+        elif value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
         elif value.ontological_category.type() == "region":
             landmark = {'objectDescriptor': self.get_objectDescriptor(spg.landmark)}
