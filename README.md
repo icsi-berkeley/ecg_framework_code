@@ -7,7 +7,7 @@ System requirements:
 
 * PyEnchant: http://pythonhosted.org/pyenchant/ 
     * Used for a spell-check module (src/main/nluas/language/spell_checker.py), which is currently inactive
-* Pyre, port of Lyre: uncompress ecg-package.tar.gaz and follow the instructions in INSTALL
+* Pyre, port of Lyre: uncompress ecg-package.tar.gz and follow the instructions in INSTALL
     * Used for n-tuple Transport (src/main/nluas/Transport.py)
 * Jython: http://www.jython.org/
     * Used to run ECG analyzer JAR (build/compling.core.jar) via Python (src/main/nluas/language/analyzer.py)

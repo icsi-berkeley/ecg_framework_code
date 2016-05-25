@@ -1,4 +1,4 @@
-#sh starter.sh &
+#!/bin/bash
 export ECG_FED=FED2
 export JYTHONPATH=build/compling.core.jar:src/main/nluas/language
 jython -J-Xmx4g -m analyzer ../ecg_grammars/research.prefs #&

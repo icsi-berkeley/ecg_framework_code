@@ -8,7 +8,6 @@
         "specificWh": "specificWh",
         "description": {"parameters": "description"},
         "gender": "gender",
-        "extensions": {"parameters": "extensions"},
         "pointers": {
             "PropertyModifier": {"property": "value"},
             "ScalarModifier": {"property": "value"},
