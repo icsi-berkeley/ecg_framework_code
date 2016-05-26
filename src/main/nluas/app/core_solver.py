@@ -113,24 +113,34 @@ class CoreProblemSolver(CoreAgent):
             self.world.append(item)
 
     def solve_command(self, ntuple):
-        self.decoder.pprint_ntuple(ntuple)
+        self.route_event(ntuple['eventDescriptor'], "query")
+        #self.decoder.pprint_ntuple(ntuple)
 
     def solve_query(self, ntuple):
-        self.decoder.pprint_ntuple(ntuple)
+        self.route_event(ntuple['eventDescriptor'], "query")
+        #self.decoder.pprint_ntuple(ntuple)
 
     def solve_assertion(self, ntuple):
         #parameters = ntuple['eventDescriptor']
-        #self.route_event(parameters, "assertion")
+        self.route_event(ntuple['eventDescriptor'], "assertion")
+        #self.decoder.pprint_ntuple(ntuple)
 
-        self.decoder.pprint_ntuple(ntuple)
+    def solve_conditional_command(self, ntuple):
+        """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print(ntuple.keys())
 
-    def solve_conditional_imperative(self, ntuple):
-        self.decoder.pprint_ntuple(ntuple)
+    def solve_conditional_assertion(self, ntuple):
+        """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print(ntuple.keys())
 
-    def solve_conditional_declarative(self, ntuple):
-        self.decoder.pprint_ntuple(ntuple)
+    def solve_conditional_query(self, ntuple):
+        """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print(ntuple.keys())
 
     def route_event(self, eventDescription, predicate):
+        if "complexKind" in eventDescription and eventDescription['complexKind'] == "conditional":
+            dispatch = getattr(self, "solve_conditional_{}".format(predicate))
+            return dispatch(eventDescription)
         features = eventDescription['e_features']
         if features:
             # Set eventFeatures
