@@ -24,6 +24,7 @@ from nluas.core_agent import *
 import random
 import sys, traceback
 import json
+import pprint
 
 
 
@@ -175,8 +176,9 @@ class CoreProblemSolver(CoreAgent):
                 self.p_features = None
                 return return_value
             except AttributeError as e:
-                traceback.print_exc()
+                #traceback.print_exc()
                 message = "I cannot solve the '{}_{}' action".format(predicate,action)
+                pprint.pprint(parameters)
                 self.history.insert(0, (parameters, False))
                 self.identification_failure(message)
 

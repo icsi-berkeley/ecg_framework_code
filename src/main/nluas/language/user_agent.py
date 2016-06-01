@@ -42,7 +42,11 @@ class UserAgent(CoreAgent):
         self.initialize_UI()
         #self.ui_parser = self.setup_ui_parser()
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
+        self.speech_address = "{}_{}".format(self.federation, "SpeechAgent")
+        self.text_address = "{}_{}".format(self.federation, "TextAgent")
         self.transport.subscribe(self.solve_destination, self.callback)
+        self.transport.subscribe(self.speech_address, self.speech_callback)
+        self.transport.subscribe(self.text_address, self.text_callback)
 
 
     def setup_ui_parser(self):
@@ -116,18 +120,55 @@ class UserAgent(CoreAgent):
     def output_stream(self, tag, message):
         print("{}: {}".format(tag, message))
 
+
+    def speech_callback(self, ntuple):
+        """ Processes text from a SpeechAgent. """
+        #print(ntuple)
+        ntuple = json.loads(ntuple)
+        json_ntuple = self.process_input(ntuple['text'])
+        if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
+            self.transport.send(self.solve_destination, json_ntuple)
+
+
+    def text_callback(self, ntuple):
+        """ Processes text from a SpeechAgent. """
+        #print(ntuple)
+        specialize = True
+        ntuple = json.loads(ntuple)
+        print(ntuple['type'])
+        msg = ntuple['text']
+        if ntuple['type'] == "standard":
+            if msg == None or msg == "":
+                specialize = False
+            elif msg.lower() == "d":
+                self.specializer.set_debug()
+                specialize = False
+            elif specialize:
+                json_ntuple = self.process_input(ntuple['text'])
+                if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
+                    self.transport.send(self.solve_destination, json_ntuple)
+        elif ntuple['type'] == "clarification":
+            print(ntuple['text'])
+            first = self.process_input(msg)
+            descriptor = json.loads(first)
+            #print(descriptor)
+            converted = json.loads(ntuple['original'])
+            self.clarification = False
+            new_ntuple = self.clarify_ntuple(converted, descriptor)
+            json_ntuple = self.decoder.convert_to_JSON(new_ntuple)
+            #json_ntuple = json.dumps(new_ntuple)
+            self.transport.send(self.solve_destination, json_ntuple)
+            self.clarification = False
+
+
+
     def callback(self, ntuple):
         ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "id_failure":
             self.output_stream(ntuple['tag'], ntuple['message'])
-            #print(ntuple['message'])
         elif call_type == "clarification":
-            #self.output_stream("{}: {}".format(ntuple['tag'], ntuple['message']))
-            #self.prompt(clarification=True, ntuple=ntuple['ntuple'])
-            #self.output_stream(ntuple['tag'], ntuple)
             self.process_clarification(ntuple['tag'], ntuple['message'], ntuple['ntuple'])
-            #print(ntuple['ntuple'])
         elif call_type == "response":
             self.output_stream(ntuple['tag'], ntuple['message'])
         elif call_type == "error_descriptor":
@@ -170,7 +211,10 @@ class UserAgent(CoreAgent):
 
     def process_clarification(self, tag, msg, ntuple):
         self.clarification = True
-        self.output_stream(tag, msg)
+        #self.output_stream(tag, msg)
+        json_ntuple = json.dumps({'tag': tag, 'message': msg, 'type': "clarification", 'original': ntuple})
+        self.transport.send(self.text_address, json_ntuple)
+        """
         #print(ntuple)
         while True:
             msg = input("  > ")
@@ -195,6 +239,7 @@ class UserAgent(CoreAgent):
                     break
                 except Exception as e:
                     print(e)
+        """
 
 
     def clarify_ntuple(self, ntuple, descriptor):
@@ -228,6 +273,6 @@ class UserAgent(CoreAgent):
 
 if __name__ == "__main__":
     ui = UserAgent(sys.argv[1:])
-    ui.prompt()
+    #ui.prompt()
 
 

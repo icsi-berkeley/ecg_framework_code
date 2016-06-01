@@ -39,6 +39,7 @@ import json
 import os
 import itertools
 import time
+import pprint
 path = os.getcwd() + "/src/main/nluas/"
 
 
@@ -176,7 +177,7 @@ class CoreSpecializer(UtilitySpecializer):
             ntuple = self.map_ontologies(ntuple)
 
             if self.debug_mode:
-                print(ntuple)
+                pprint.pprint(ntuple)
             return dict(ntuple)
 
 
