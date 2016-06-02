@@ -35,8 +35,8 @@ class TextAgent(CoreAgent):
 
     def prompt(self):
         #if not self.clarification:
-        print("Calling prompt....")
-        print("Clarification is: {}".format(self.clarification))
+        #print("Calling prompt....")
+        #print("Clarification is: {}".format(self.clarification))
         msg = input("> ")
         if msg == "q":
             self.transport.quit_federation()

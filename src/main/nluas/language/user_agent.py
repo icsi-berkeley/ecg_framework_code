@@ -135,7 +135,6 @@ class UserAgent(CoreAgent):
         #print(ntuple)
         specialize = True
         ntuple = json.loads(ntuple)
-        print(ntuple['type'])
         msg = ntuple['text']
         if ntuple['type'] == "standard":
             if msg == None or msg == "":
@@ -148,7 +147,6 @@ class UserAgent(CoreAgent):
                 if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
                     self.transport.send(self.solve_destination, json_ntuple)
         elif ntuple['type'] == "clarification":
-            print(ntuple['text'])
             first = self.process_input(msg)
             descriptor = json.loads(first)
             #print(descriptor)

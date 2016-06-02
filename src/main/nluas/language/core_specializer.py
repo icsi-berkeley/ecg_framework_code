@@ -168,6 +168,8 @@ class CoreSpecializer(UtilitySpecializer):
             eventProcess = fs.m.content.eventProcess
             ntuple = self.mood_templates[mood]
             ntuple['eventDescriptor'] = self.specialize_event(content)
+            if hasattr(fs.m, "speechAct"):
+                ntuple['speechAct'] = fs.m.speechAct.type()
             if 'eventProcess' in ntuple['eventDescriptor']:
                 parameters = ntuple['eventDescriptor']['eventProcess']
                 if mood == "wh_question":
