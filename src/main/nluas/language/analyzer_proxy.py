@@ -48,3 +48,6 @@ class Analyzer(object):
 
     def get_lexicon(self):
         return self.analyzer.get_lexicon()
+
+    def get_utterances(self):
+        return self.analyzer.get_utterances()

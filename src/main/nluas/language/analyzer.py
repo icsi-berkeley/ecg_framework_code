@@ -68,6 +68,11 @@ class Analyzer(object):
         lexes = self.analyzer.getLexicon()
         return list(lexes)
 
+
+    def get_utterances(self):
+        utterances = self.analyzer.getUtterances()
+        return list(utterances)
+
     def get_parses(self, sentence):
         try:
             return getParses(sentence, self.analyzer)

@@ -76,8 +76,8 @@ class CoreSpecializer(UtilitySpecializer):
             return self.get_objectDescriptor(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "PropertyModifier"):
             return self.get_property(fs.m)
-        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"):
-            return self.specialize_event(fs.m)
+        #elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"): # Testing...
+        #    return self.specialize_event(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Process"):
             return self.fill_parameters(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "SPG"):
@@ -89,7 +89,8 @@ class CoreSpecializer(UtilitySpecializer):
             return {"locationDescriptor": {"relation": self.get_locationDescriptor(fs.m.profiledArea),
                                             "objectDescriptor": self.get_objectDescriptor(fs.m.landmark)}}
         else:
-            print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
+            raise Exception("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
+            #print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
 
     def initialize_templates(self):
         """ Initializes templates from path, set above. """
