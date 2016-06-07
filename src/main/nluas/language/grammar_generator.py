@@ -14,10 +14,8 @@ lexicon = sorted(list(set(analyzer.get_lexicon())))
 
 #utterances = lexicon = sorted(list(set(analyzer.get_utterances())))
 
-"""
+
 with open("generated/words.txt", "w") as lexicon_file:
 	for word in lexicon:
 		lexicon_file.write("{}\n".format(word))
 	lexicon_file.close()
-
-"""
