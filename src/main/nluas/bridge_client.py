@@ -112,9 +112,9 @@ class Global:
 
 def main(argv):
 
-    if six.PY3:
-        sys.stderr.write('bridge_client.py currently only supports python2')
-        sys.exit(1)
+    #if six.PY3:
+    #    sys.stderr.write('bridge_client.py currently only supports python2')
+    #    sys.exit(1)
 
     parse_arguments(argv[1:])
     setup_logging()
@@ -222,8 +222,12 @@ def main(argv):
                 # need to un-json the message (which server_send
                 # will re-json). There's probably a more elegant way
                 # to do this.
-                message = json.loads(event[4].decode('utf-8'))
-                server_send(['SHOUT', name, channel, message])
+                if six.PY3:
+                    decoded = event[4].decode('utf-8')
+                    server_send(['SHOUT', name, channel, decoded])
+                else:
+                    message = json.loads(event[4].decode('utf-8'))
+                    server_send(['SHOUT', name, channel, message])
 # end main()
 
 # server_send and server_recv taken almost directly from

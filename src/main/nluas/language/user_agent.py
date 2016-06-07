@@ -47,6 +47,8 @@ class UserAgent(CoreAgent):
         self.transport.subscribe(self.solve_destination, self.callback)
         self.transport.subscribe(self.speech_address, self.speech_callback)
         self.transport.subscribe(self.text_address, self.text_callback)
+        print(self.speech_address)
+        print(self.address)
 
 
     def setup_ui_parser(self):
@@ -124,8 +126,11 @@ class UserAgent(CoreAgent):
     def speech_callback(self, ntuple):
         """ Processes text from a SpeechAgent. """
         #print(ntuple)
-        ntuple = json.loads(ntuple)
+        print(ntuple)
+        #ntuple = json.loads(ntuple)
+        print(ntuple['text'])
         json_ntuple = self.process_input(ntuple['text'])
+        
         if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
             self.transport.send(self.solve_destination, json_ntuple)
 

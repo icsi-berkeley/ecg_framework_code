@@ -12,7 +12,7 @@ analyzer = Analyzer("http://localhost:8090")
 
 lexicon = sorted(list(set(analyzer.get_lexicon())))
 
-utterances = lexicon = sorted(list(set(analyzer.get_utterances())))
+#utterances = lexicon = sorted(list(set(analyzer.get_utterances())))
 
 """
 with open("generated/words.txt", "w") as lexicon_file:
