@@ -47,8 +47,6 @@ class UserAgent(CoreAgent):
         self.transport.subscribe(self.solve_destination, self.callback)
         self.transport.subscribe(self.speech_address, self.speech_callback)
         self.transport.subscribe(self.text_address, self.text_callback)
-        print(self.speech_address)
-        print(self.address)
 
 
     def setup_ui_parser(self):
@@ -110,8 +108,8 @@ class UserAgent(CoreAgent):
                     self.specializer.set_spans(matched)
                     ntuple = self.specializer.specialize(fs)
 
-                    json_ntuple = self.decoder.convert_to_JSON(ntuple)
-                    return json_ntuple
+                    #json_ntuple = self.decoder.convert_to_JSON(ntuple)
+                    return ntuple
                 except Exception as e:
                     self.output_stream(self.name, e)
                     #traceback.print_exc()
@@ -126,20 +124,17 @@ class UserAgent(CoreAgent):
     def speech_callback(self, ntuple):
         """ Processes text from a SpeechAgent. """
         #print(ntuple)
-        print(ntuple)
         #ntuple = json.loads(ntuple)
-        print(ntuple['text'])
-        json_ntuple = self.process_input(ntuple['text'])
-        
-        if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
-            self.transport.send(self.solve_destination, json_ntuple)
+        new_ntuple = self.process_input(ntuple['text']) 
+        if new_ntuple and new_ntuple != "null" and "predicate_type" in new_ntuple:
+            self.transport.send(self.solve_destination, new_ntuple)
 
 
     def text_callback(self, ntuple):
         """ Processes text from a SpeechAgent. """
         #print(ntuple)
         specialize = True
-        ntuple = json.loads(ntuple)
+        #ntuple = json.loads(ntuple)
         msg = ntuple['text']
         if ntuple['type'] == "standard":
             if msg == None or msg == "":
@@ -148,19 +143,14 @@ class UserAgent(CoreAgent):
                 self.specializer.set_debug()
                 specialize = False
             elif specialize:
-                json_ntuple = self.process_input(ntuple['text'])
-                if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
-                    self.transport.send(self.solve_destination, json_ntuple)
+                new_ntuple = self.process_input(ntuple['text'])
+                if new_ntuple and new_ntuple != "null" and "predicate_type" in new_ntuple:
+                    self.transport.send(self.solve_destination, new_ntuple)
         elif ntuple['type'] == "clarification":
-            first = self.process_input(msg)
-            descriptor = json.loads(first)
-            #print(descriptor)
-            converted = json.loads(ntuple['original'])
+            descriptor = self.process_input(msg)
             self.clarification = False
-            new_ntuple = self.clarify_ntuple(converted, descriptor)
-            json_ntuple = self.decoder.convert_to_JSON(new_ntuple)
-            #json_ntuple = json.dumps(new_ntuple)
-            self.transport.send(self.solve_destination, json_ntuple)
+            new_ntuple = self.clarify_ntuple(ntuple['original'], descriptor)
+            self.transport.send(self.solve_destination, new_ntuple)
             self.clarification = False
 
 
@@ -206,17 +196,17 @@ class UserAgent(CoreAgent):
                     specialize = False
                 elif specialize:
                     #if self.check_spelling(msg):
-                    json_ntuple = self.process_input(msg)
-                    if json_ntuple and json_ntuple != "null" and "predicate_type" in json.loads(json_ntuple):
-                        self.transport.send(self.solve_destination, json_ntuple)
+                    ntuple = self.process_input(msg)
+                    if ntuple and ntuple != None and "predicate_type" in ntuple:
+                        self.transport.send(self.solve_destination, ntuple)
 
 
 
     def process_clarification(self, tag, msg, ntuple):
         self.clarification = True
         #self.output_stream(tag, msg)
-        json_ntuple = json.dumps({'tag': tag, 'message': msg, 'type': "clarification", 'original': ntuple})
-        self.transport.send(self.text_address, json_ntuple)
+        new_ntuple = {'tag': tag, 'message': msg, 'type': "clarification", 'original': ntuple}
+        self.transport.send(self.text_address, new_ntuple)
         """
         #print(ntuple)
         while True:

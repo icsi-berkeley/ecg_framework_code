@@ -49,28 +49,15 @@ class TextAgent(CoreAgent):
                 self.clarification = False
             else:
                 ntuple = {'text': msg, 'type': "standard"}
-            json_ntuple = json.dumps(ntuple)
-            self.transport.send(self.ui_destination, json_ntuple)
+            self.transport.send(self.ui_destination, ntuple)
 
     def callback(self, ntuple):
         """ Callback for receiving information from UI-Agent. """
-        ntuple = json.loads(ntuple)
+        #ntuple = json.loads(ntuple)
         if "type" in ntuple and ntuple['type'] == "clarification":
             self.clarification = True
             self.original = ntuple['original']
             self.output_stream(ntuple['tag'], ntuple['message'])
-            """
-            while True:
-                print("++++++++++++++")
-                msg = input("> ")
-                if msg == "q":
-                    self.clarification = False
-
-                    break
-                elif msg != None and msg != "":
-                    self.transport.send(self.ui_destination, json.dumps({'text': msg, 'type': 'clarification', 'original': ntuple['original']}))
-                    self.clarification = False
-            """
 
 
 

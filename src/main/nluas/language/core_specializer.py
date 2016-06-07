@@ -74,6 +74,8 @@ class CoreSpecializer(UtilitySpecializer):
             return None
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "RD"):
             return self.get_objectDescriptor(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "HeadingSchema"):
+            return self.get_headingDescriptor(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "PropertyModifier"):
             return self.get_property(fs.m)
         #elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"): # Testing...

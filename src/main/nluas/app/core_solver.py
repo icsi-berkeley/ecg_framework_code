@@ -72,8 +72,8 @@ class CoreProblemSolver(CoreAgent):
         self.parameter_templates = self.read_templates(self.__path__+"parameter_templates.json")
 
     def request_clarification(self, ntuple, message="This ntuple requires clarification."):
-        new = self.decoder.convert_to_JSON(ntuple)
-        request = {'ntuple': new, 'message': message, 'type': 'clarification', 'tag': self.address}
+        #new = self.decoder.convert_to_JSON(ntuple)
+        request = {'ntuple': ntuple, 'message': message, 'type': 'clarification', 'tag': self.address}
         self.transport.send(self.ui_address, json.dumps(request))
 
     def identification_failure(self, message):
@@ -88,8 +88,8 @@ class CoreProblemSolver(CoreAgent):
         request = {'type': 'error_descriptor', 'message': message, 'tag': self.address}
         self.transport.send(self.ui_address, json.dumps(request))
 
-    def solve(self, json_ntuple):
-        ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
+    def solve(self, ntuple):
+        #ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
         if self.check_for_clarification(ntuple):
             self.request_clarification(ntuple=ntuple)
         else:
@@ -139,6 +139,7 @@ class CoreProblemSolver(CoreAgent):
         print(ntuple.keys())
 
     def route_event(self, eventDescription, predicate):
+        print(eventDescription)
         if "complexKind" in eventDescription and eventDescription['complexKind'] == "conditional":
             dispatch = getattr(self, "solve_conditional_{}".format(predicate))
             return dispatch(eventDescription)
