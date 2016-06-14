@@ -139,7 +139,6 @@ class CoreProblemSolver(CoreAgent):
         print(ntuple.keys())
 
     def route_event(self, eventDescription, predicate):
-        print(eventDescription)
         if "complexKind" in eventDescription and eventDescription['complexKind'] == "conditional":
             dispatch = getattr(self, "solve_conditional_{}".format(predicate))
             return dispatch(eventDescription)
