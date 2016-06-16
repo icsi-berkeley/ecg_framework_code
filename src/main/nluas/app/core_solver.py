@@ -95,7 +95,7 @@ class CoreProblemSolver(CoreAgent):
         else:
             self.ntuple = ntuple
             predicate_type = ntuple['predicate_type']
-            print(predicate_type)
+            #print(predicate_type)
             try:
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
