@@ -95,6 +95,7 @@ class CoreProblemSolver(CoreAgent):
         else:
             self.ntuple = ntuple
             predicate_type = ntuple['predicate_type']
+            print(predicate_type)
             try:
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
@@ -114,7 +115,7 @@ class CoreProblemSolver(CoreAgent):
             self.world.append(item)
 
     def solve_command(self, ntuple):
-        self.route_event(ntuple['eventDescriptor'], "query")
+        self.route_event(ntuple['eventDescriptor'], "command")
         #self.decoder.pprint_ntuple(ntuple)
 
     def solve_query(self, ntuple):
