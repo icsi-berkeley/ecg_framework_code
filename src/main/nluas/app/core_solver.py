@@ -192,12 +192,6 @@ class CoreProblemSolver(CoreAgent):
     def close(self):
         return
 
-    def solve_serial(self, parameters, predicate):
-        print(parameters)
-
-    def solve_serial(self, parameters, predicate):
-        print(parameters)
-
     def check_for_clarification(self, ntuple):
         """ Will need to be replaced by a process that checks whether ntuple needs clarification.
         Requires some sort of context/world model. """
