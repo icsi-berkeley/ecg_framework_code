@@ -1,4 +1,7 @@
+from __future__ import print_function
 from nluas.Transport import *
+# Makes this work with both py2 and py3
+from six.moves import input
 import sys
 
 name, destination = sys.argv[1], sys.argv[2]

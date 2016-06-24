@@ -4,16 +4,6 @@
         "return_type": "error_descriptor",
         "eventDescriptor": null
     },
-    "conditional_declarative": {
-        "predicate_type": "conditional_declarative",
-        "return_type": "error_descriptor",
-        "eventDescriptor": null
-    },
-    "conditional_imperative": {
-        "predicate_type": "conditional_imperative",
-        "return_type": "error_descriptor",
-        "eventDescriptor": null
-    },
     "yn_question": {
         "predicate_type": "query",
         "return_type": "boolean",

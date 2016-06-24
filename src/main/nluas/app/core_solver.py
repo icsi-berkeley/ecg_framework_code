@@ -95,6 +95,7 @@ class CoreProblemSolver(CoreAgent):
         else:
             self.ntuple = ntuple
             predicate_type = ntuple['predicate_type']
+            #print(predicate_type)
             try:
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
@@ -114,7 +115,7 @@ class CoreProblemSolver(CoreAgent):
             self.world.append(item)
 
     def solve_command(self, ntuple):
-        self.route_event(ntuple['eventDescriptor'], "query")
+        self.route_event(ntuple['eventDescriptor'], "command")
         #self.decoder.pprint_ntuple(ntuple)
 
     def solve_query(self, ntuple):
@@ -171,7 +172,9 @@ class CoreProblemSolver(CoreAgent):
                 if parameters['p_features']:
                     self.p_features = parameters['p_features']['processFeatures']
                 dispatch = getattr(self, "{}_{}".format(predicate, action))
-                return_value = dispatch(parameters)
+
+                #return_value = dispatch(parameters)
+                return_value = self.route_dispatch(dispatch, parameters)
                 self.history.insert(0, (parameters, True))
                 self.p_features = None
                 return return_value
@@ -182,14 +185,12 @@ class CoreProblemSolver(CoreAgent):
                 self.history.insert(0, (parameters, False))
                 self.identification_failure(message)
 
+    def route_dispatch(self, dispatch_function, parameters):
+        """ Simply runs dispatch_function on PARAMETERS. """
+        return dispatch_function(parameters)
+
     def close(self):
         return
-
-    def solve_serial(self, parameters, predicate):
-        print(parameters)
-
-    def solve_serial(self, parameters, predicate):
-        print(parameters)
 
     def check_for_clarification(self, ntuple):
         """ Will need to be replaced by a process that checks whether ntuple needs clarification.
