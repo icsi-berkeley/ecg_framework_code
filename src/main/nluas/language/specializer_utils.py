@@ -208,6 +208,7 @@ class UtilitySpecializer(DebuggingSpecializer):
     """ Simple reference resolution gadget, meant to unify object pronouns with potential
     antecedents. """
     def resolve_referents(self, item, antecedents = None, actionary=None, pred=None):
+        #self.find_closest_antecedent([7,8])
         if antecedents is None:
             antecedents = self._stacked
         popper = list(antecedents)
@@ -224,6 +225,17 @@ class UtilitySpecializer(DebuggingSpecializer):
     def clean_referent(self, ref):
         ref['objectDescriptor'].pop('property', None)
         return ref
+
+    def find_closest_antecedent(self, target):
+        """ Takes in target span/word, ranks previous spans. """
+        ranks = []
+        for k in self.np_spans:
+            #if self.analyzer.issubtype("CONSTRUCTION", k[0], "Pronoun"):
+            span = k[2]
+            if span[0] < target[0] and span[1] < target[1]:
+                ranks.insert(0, k)
+        #print(ranks)
+
 
     def ordering(self, fs, ref):
         for index, value in fs.rootconstituent.__features__.items():

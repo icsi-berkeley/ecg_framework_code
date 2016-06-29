@@ -88,12 +88,15 @@ class UserAgent(CoreAgent):
             quit()
 
     def match_spans(self, spans, sentence):
-        sentence = sentence.replace(".", " . ").replace(",", " , ").replace("!", " ! ").split(" ")
-        final = OrderedDict()
+        sentence = sentence.replace(".", " . ").replace(",", " , ").replace("?", " ? ").replace("!", " ! ").split()
+        #final = OrderedDict()
+        #word_spans = OrderedDict()
+        final = []
         for span in spans:
             lr = span['span']
-            final[span['type']] = (sentence[lr[0]:lr[1]], lr, span['id'])
+            final.append([span['type'], sentence[lr[0]:lr[1]], lr, span['id']])
         return final
+
 
     def process_input(self, msg):
         try:
@@ -111,7 +114,7 @@ class UserAgent(CoreAgent):
                     #json_ntuple = self.decoder.convert_to_JSON(ntuple)
                     return ntuple
                 except Exception as e:
-                    self.output_stream(self.name, e)
+                    #self.output_stream(self.name, e)
                     #traceback.print_exc()
                     index += 1
         except Exception as e:
@@ -125,7 +128,9 @@ class UserAgent(CoreAgent):
         """ Processes text from a SpeechAgent. """
         #print(ntuple)
         #ntuple = json.loads(ntuple)
-        new_ntuple = self.process_input(ntuple['text']) 
+        text = ntuple['text'].lower()
+        print("Got {}".format(text))
+        new_ntuple = self.process_input(text) 
         if new_ntuple and new_ntuple != "null" and "predicate_type" in new_ntuple:
             self.transport.send(self.solve_destination, new_ntuple)
 

@@ -67,6 +67,10 @@ class CoreSpecializer(UtilitySpecializer):
     def set_spans(self, spans):
         """ Sets the current constructional spans to input spans. These are used for referent resolution. (TODO)."""
         self.spans = spans
+        self.np_spans = []
+        for k in self.spans:
+            if self.analyzer.issubtype("CONSTRUCTION", k[0], "NP"):
+                self.np_spans.append(k)
 
     def specialize_fragment(self, fs):
         """ Specializes a sentence fragment, e.g. 'the red one' or a non-discourse-utterance. """
@@ -249,7 +253,6 @@ class CoreSpecializer(UtilitySpecializer):
                         returned[prop] = value
                     elif pointer == "AdjunctModification":
                         modifier = mod.modifier
-                        print(modifier.type())
                         if modifier.type() == "Accompaniment":
                             returned["co-participant"] = self.get_objectDescriptor(modifier.co_participant)
                         elif modifier.type() == "Instrument":

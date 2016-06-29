@@ -181,7 +181,7 @@ class CoreProblemSolver(CoreAgent):
             except AttributeError as e:
                 #traceback.print_exc()
                 message = "I cannot solve the '{}_{}' action".format(predicate,action)
-                pprint.pprint(parameters)
+                #pprint.pprint(parameters)
                 self.history.insert(0, (parameters, False))
                 self.identification_failure(message)
 
