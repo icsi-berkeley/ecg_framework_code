@@ -182,28 +182,6 @@ class UserAgent(CoreAgent):
         f = open(generated, "w")
         f.write(json_ntuple)
 
-    def prompt(self):
-        while True:# and not self.clarification:
-            #print(self.clarification)
-            if self.clarification:
-                pass
-            else:
-                specialize = True
-                msg = input("> ")
-
-                if msg == "q":
-                    self.transport.quit_federation()
-                    quit()
-                elif msg == None or msg == "":
-                    specialize = False
-                elif msg.lower() == 'd':
-                    self.specializer.set_debug()
-                    specialize = False
-                elif specialize:
-                    #if self.check_spelling(msg):
-                    ntuple = self.process_input(msg)
-                    if ntuple and ntuple != None and "predicate_type" in ntuple:
-                        self.transport.send(self.solve_destination, ntuple)
 
 
 
@@ -212,32 +190,6 @@ class UserAgent(CoreAgent):
         #self.output_stream(tag, msg)
         new_ntuple = {'tag': tag, 'message': msg, 'type': "clarification", 'original': ntuple}
         self.transport.send(self.text_address, new_ntuple)
-        """
-        #print(ntuple)
-        while True:
-            msg = input("  > ")
-            #if msg == "q":
-            #    self.clarification = False
-            #    self.transport.quit_federation()
-            if msg == "q":
-                self.clarification = False
-                break
-            elif msg:
-                try:
-                    first = self.process_input(msg)
-                    descriptor = json.loads(first)
-                    #print(descriptor)
-                    converted = self.decoder.convert_JSON_to_ntuple(ntuple)
-                    self.clarification = False
-                    new_ntuple = self.clarify_ntuple(converted, descriptor)
-                    json_ntuple = self.decoder.convert_to_JSON(new_ntuple)
-                    #json_ntuple = json.dumps(new_ntuple)
-                    self.transport.send(self.solve_destination, json_ntuple)
-                    self.clarification = False
-                    break
-                except Exception as e:
-                    print(e)
-        """
 
 
     def clarify_ntuple(self, ntuple, descriptor):

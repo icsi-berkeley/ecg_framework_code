@@ -91,6 +91,7 @@ class KaldiASR(six.Iterator):
 
         # Path to where ASR models and other required files are stored.
         self.asrdir = asrdir
+        print(asrdir)
 
         # Make sure required files exist.
         for f in ('HCLG.fst', 'final.mdl', 'mfcc.conf', 'online_nnet2_decoding.conf', 'words.txt'):
