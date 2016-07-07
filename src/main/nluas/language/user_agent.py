@@ -161,6 +161,7 @@ class UserAgent(CoreAgent):
 
 
     def callback(self, ntuple):
+        print(ntuple)
         #ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "id_failure":
@@ -171,9 +172,6 @@ class UserAgent(CoreAgent):
             self.output_stream(ntuple['tag'], ntuple['message'])
         elif call_type == "error_descriptor":
             self.output_stream(ntuple['tag'], ntuple['message'])
-        #print(ntuple)
-        #decoded = self.decoder.convert_JSON_to_ntuple(ntuple)
-        #print(decoded)
 
     def write_file(self, json_ntuple, msg):
         sentence = msg.replace(" ", "_").replace(",", "").replace("!", "").replace("?", "")

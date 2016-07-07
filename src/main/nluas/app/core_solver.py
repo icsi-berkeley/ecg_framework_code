@@ -74,19 +74,19 @@ class CoreProblemSolver(CoreAgent):
     def request_clarification(self, ntuple, message="This ntuple requires clarification."):
         #new = self.decoder.convert_to_JSON(ntuple)
         request = {'ntuple': ntuple, 'message': message, 'type': 'clarification', 'tag': self.address}
-        self.transport.send(self.ui_address, json.dumps(request))
+        self.transport.send(self.ui_address, request)
 
     def identification_failure(self, message):
         request = {'type': 'id_failure', 'message': message, 'tag': self.address}
-        self.transport.send(self.ui_address, json.dumps(request))
+        self.transport.send(self.ui_address, request)
 
     def respond_to_query(self, message):
         request = {'type': 'response', 'message': message, 'tag': self.address}
-        self.transport.send(self.ui_address, json.dumps(request))
+        self.transport.send(self.ui_address, request)
 
     def return_error_descriptor(self, message):
         request = {'type': 'error_descriptor', 'message': message, 'tag': self.address}
-        self.transport.send(self.ui_address, json.dumps(request))
+        self.transport.send(self.ui_address, request)
 
     def solve(self, ntuple):
         #ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
