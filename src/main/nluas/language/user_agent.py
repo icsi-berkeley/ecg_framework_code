@@ -161,7 +161,7 @@ class UserAgent(CoreAgent):
 
 
     def callback(self, ntuple):
-        ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
+        #ntuple = self.decoder.convert_JSON_to_ntuple(ntuple)
         call_type = ntuple['type']
         if call_type == "id_failure":
             self.output_stream(ntuple['tag'], ntuple['message'])
@@ -205,6 +205,14 @@ class UserAgent(CoreAgent):
                 new[key] = value
         return new
 
+    """
+    def prompt(self):
+        while True:
+            s = input("> ")
+            if s == "q":
+                self.transport.quit_federation()
+                quit()
+    """
     
     def check_spelling(self, msg):
         table = self.spell_checker.spell_check(msg)
