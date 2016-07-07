@@ -203,12 +203,13 @@ class Transport():
 
     def quit_federation(self):
         '''Send a quit message to all agents in this federation, and then close down the Transport.'''
-        self._pyre.shouts(self._globalchannel, u"QUIT")
-        self._run = False
-        # Wait for the readthread to finish
-        self._readthread.join()
-        # Tell Pyre to shut down
-        self._pyre.stop()
+        if self._run:
+            self._pyre.shouts(self._globalchannel, u"QUIT")
+            self._run = False
+            # Wait for the readthread to finish
+            self._readthread.join()
+            # Tell Pyre to shut down
+            self._pyre.stop()
 
     def is_running(self):
         '''Return the status of this Transport. If the Transport isn't running, you should not send it messages and the callbacks will not be called.'''
@@ -381,8 +382,4 @@ if __name__ == "__main__":
     myname = sys.argv[1]
     remotename = sys.argv[2]
 
-    t = Transport(myname)
-    t.subscribe(remotename, lambda tuple: print('Got', tuple))
-
-    while True:
-        t.send(remotename, input())
+    t = Trans
