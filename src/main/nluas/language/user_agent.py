@@ -203,14 +203,14 @@ class UserAgent(CoreAgent):
                 new[key] = value
         return new
 
-    """
+    
     def prompt(self):
         while True:
             s = input("> ")
             if s == "q":
                 self.transport.quit_federation()
                 quit()
-    """
+    
     
     def check_spelling(self, msg):
         table = self.spell_checker.spell_check(msg)
@@ -229,6 +229,6 @@ class UserAgent(CoreAgent):
 
 if __name__ == "__main__":
     ui = UserAgent(sys.argv[1:])
-    #ui.prompt()
+    ui.prompt()
 
 
