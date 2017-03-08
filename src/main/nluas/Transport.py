@@ -94,7 +94,7 @@ class TransportSecurityError(TransportError):
 ######################################################################
 #
 # The main class for Transport. On creation, sets up a thread to
-# listen for incoming messages. 
+# listen for incoming messages.
 #
 
 class Transport():
@@ -106,6 +106,11 @@ class Transport():
             dest = self._prefix + dest
         self._pyre.shout(dest, json.dumps(ntuple).encode('utf-8'))
     # send()
+
+    def broadcast(self, ntuple):
+        '''Send given ntuple to Transport all destinations. If the destination isn't listening then the message will (currently) be silently ignored.'''
+        self._pyre.shout(self._globalchannel, json.dumps(ntuple).encode('utf-8'))
+    # broadcast()
 
     # Notes on subscribe
     #
@@ -150,7 +155,7 @@ class Transport():
     # unsubscribe_all()
 
     # Notes on get()
-    #    
+    #
     # If you already subscribe to remote, temporarly overrides
     # the subscribe. The subscribed callback will NOT be called.
     # The subscription is replaced after get() returns.
@@ -187,7 +192,7 @@ class Transport():
 
         # Set the subscription
         self._subscribers[remote] = get_callback
-        
+
         # Wait for the callback to be called.
         e.wait()
 
@@ -225,7 +230,7 @@ class Transport():
 
         # dict of remote name to callback. See subscribe method above.
         self._subscribers = {}
-        
+
         # Callback for all message (or None if none registered)
         self._subscribe_all = None
 
