@@ -1,11 +1,11 @@
 """
-Simple solver "core". Contains capabilities for unpacking 
-a JSON n-tuple, as well as routing this n-tuple based 
-on the predicate_type (command, query, assertion, etc.). 
-Other general capabilities can be added. The design 
-is general enough that the same "unpacking" and "routing" 
+Simple solver "core". Contains capabilities for unpacking
+a JSON n-tuple, as well as routing this n-tuple based
+on the predicate_type (command, query, assertion, etc.).
+Other general capabilities can be added. The design
+is general enough that the same "unpacking" and "routing"
 method can be used, as long as a new method is written for a given
-predicate_type. 
+predicate_type.
 
 "Route_action" can be called by command/query/assertion methods,
 to route each parameter to the task-specific method. E.g., "solve_move",
@@ -56,7 +56,6 @@ class CoreProblemSolver(CoreAgent):
         self.eventFeatures=None
         self.parameter_templates = OrderedDict()
         #self.initialize_templates()
-        
 
 
     def setup_solver_parser(self):
@@ -65,6 +64,8 @@ class CoreProblemSolver(CoreAgent):
         return parser
 
     def callback(self, ntuple):
+        if self.is_quit(ntuple):
+            return self.close()
         self.solve(ntuple)
 
     def initialize_templates(self):
@@ -109,7 +110,7 @@ class CoreProblemSolver(CoreAgent):
     def broadcast(self):
         """ Here, does nothing. Later, an AgentSolver will broadcast information back to BossSolver. """
         pass
-                
+
     def update_world(self, discovered=[]):
         for item in discovered:
             self.world.append(item)
@@ -188,9 +189,6 @@ class CoreProblemSolver(CoreAgent):
     def route_dispatch(self, dispatch_function, parameters):
         """ Simply runs dispatch_function on PARAMETERS. """
         return dispatch_function(parameters)
-
-    def close(self):
-        return
 
     def check_for_clarification(self, ntuple):
         """ Will need to be replaced by a process that checks whether ntuple needs clarification.

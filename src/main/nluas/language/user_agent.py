@@ -1,10 +1,10 @@
 
 """
 The User-Agent (also called UI-Agent, Agent-UI) receives text/speech
-as input, and produces an n-tuple, which it sends to a ProblemSolver. 
+as input, and produces an n-tuple, which it sends to a ProblemSolver.
 It feeds the text through the ECG Analyzer (running on a local server)
 to produce a SemSpec, which it then runs through the CoreSpecializer to produce
-the n-tuple. 
+the n-tuple.
 
 Interaction with the user is modulated through the output_stream method, which
 allows designers to subclass the User-Agent and define a new mode of interaction.
@@ -78,7 +78,7 @@ class UserAgent(CoreAgent):
 
     def initialize_analyzer(self):
         self.analyzer = Analyzer(self.analyzer_port)
-        
+
     def initialize_specializer(self):
         try:
             self.specializer=CoreSpecializer(self.analyzer)
@@ -130,7 +130,7 @@ class UserAgent(CoreAgent):
         #ntuple = json.loads(ntuple)
         text = ntuple['text'].lower()
         print("Got {}".format(text))
-        new_ntuple = self.process_input(text) 
+        new_ntuple = self.process_input(text)
         if new_ntuple and new_ntuple != "null" and "predicate_type" in new_ntuple:
             self.transport.send(self.solve_destination, new_ntuple)
 
@@ -141,7 +141,9 @@ class UserAgent(CoreAgent):
         specialize = True
         #ntuple = json.loads(ntuple)
         msg = ntuple['text']
-        if ntuple['type'] == "standard":
+        if self.is_quit(ntuple):
+            self.close()
+        elif ntuple['type'] == "standard":
             if msg == None or msg == "":
                 specialize = False
             elif msg.lower() == "d":
@@ -157,7 +159,6 @@ class UserAgent(CoreAgent):
             new_ntuple = self.clarify_ntuple(ntuple['original'], descriptor)
             self.transport.send(self.solve_destination, new_ntuple)
             self.clarification = False
-
 
 
     def callback(self, ntuple):
@@ -182,7 +183,6 @@ class UserAgent(CoreAgent):
 
 
 
-
     def process_clarification(self, tag, msg, ntuple):
         self.clarification = True
         #self.output_stream(tag, msg)
@@ -203,15 +203,6 @@ class UserAgent(CoreAgent):
                 new[key] = value
         return new
 
-    
-    def prompt(self):
-        while True:
-            s = input("> ")
-            if s == "q":
-                self.transport.quit_federation()
-                quit()
-    
-    
     def check_spelling(self, msg):
         table = self.spell_checker.spell_check(msg)
         if table:
@@ -229,6 +220,3 @@ class UserAgent(CoreAgent):
 
 if __name__ == "__main__":
     ui = UserAgent(sys.argv[1:])
-    ui.prompt()
-
-

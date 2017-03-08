@@ -2,7 +2,7 @@
 Author: seantrott <seantrott@icsi.berkeley.edu>
 
 Defines a CoreAgent, which uses the Transport module. Can be initialized
-by just feeding it a channel name. All "Agents" inherit from the CoreAgent. 
+by just feeding it a channel name. All "Agents" inherit from the CoreAgent.
 
 ------
 See LICENSE.txt for licensing information.
@@ -14,6 +14,8 @@ import argparse
 import os
 import sys
 import logging
+import json
+import time
 
 from collections import OrderedDict
 
@@ -52,7 +54,7 @@ class CoreAgent(object):
         return base
 
     def unify_templates(self, child, parent):
-        """ Unifies a child and parent template. Adds all parent key-value pairs 
+        """ Unifies a child and parent template. Adds all parent key-value pairs
         unless the key already exists in the child. """
         child.update({key:value for (key, value) in parent.items() if key not in child})
         return child
@@ -69,6 +71,8 @@ class CoreAgent(object):
         self.logfile = args.logfile
         self.loglevel = args.loglevel
         self.logagent = args.logagent
+        self._keep_alive = True
+        self._broadcasted = False
 
     def setup_parser(self):
         parser = argparse.ArgumentParser()
@@ -78,11 +82,27 @@ class CoreAgent(object):
         parser.add_argument("-logagent", type=str, help="indicate agent responsible for logging output")
         return parser
 
-    def close(self):
-        #self.transport.join()
-        print("Transport needs a QUIT procedure.")
-        sys.exit()
+    def close(self, quit_federation=False):
+        if not self._broadcasted:
+            self._broadcasted = True
+            self.transport.broadcast({"text": "QUIT", "type": "QUIT"}) # application-level quit
 
+        if quit_federation:
+            time.sleep(0.5)
+            self.transport.quit_federation() # transport-level quit
+
+        self._keep_alive = False
+
+    def keep_alive(self, func=None):
+        while self._keep_alive:
+            if func:
+                func()
+            else:
+                time.sleep(0.1)
+
+    def is_quit(self, ntuple):
+        """ Checks if an ntuple is the application quit message """
+        return "type" in ntuple and ntuple["type"] == 'QUIT'
 
     def callback(self, ntuple):
         print("{} received {}.".format(self.name, ntuple))
@@ -90,5 +110,3 @@ class CoreAgent(object):
     def subscribe_mass(self, ports):
         for port in ports:
             self.transport.subscribe(port, self.callback)
-
-

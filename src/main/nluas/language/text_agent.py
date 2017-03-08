@@ -39,8 +39,7 @@ class TextAgent(CoreAgent):
         #print("Clarification is: {}".format(self.clarification))
         msg = input("> ")
         if msg == "q":
-            self.transport.quit_federation()
-            quit()
+            self.close(True)
         elif msg == None or msg =="":
             pass
         else:
@@ -67,6 +66,4 @@ class TextAgent(CoreAgent):
 
 if __name__ == "__main__":
     text = TextAgent(sys.argv[1:])
-    while True:
-        text.prompt()
-        
+    text.keep_alive(text.prompt())
