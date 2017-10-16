@@ -112,18 +112,17 @@ class CoreProblemSolver(CoreAgent):
     def solve_command(self, ntuple):
         self.route_event(ntuple['eventDescriptor'], "command")
         if self.verbose:
-          self.decoder.pprint_ntuple(ntuple)
+            self.decoder.pprint_ntuple(ntuple)
 
     def solve_query(self, ntuple):
         self.route_event(ntuple['eventDescriptor'], "query")
         if self.verbose:
-          self.decoder.pprint_ntuple(ntuple)
+            self.decoder.pprint_ntuple(ntuple)
 
     def solve_assertion(self, ntuple):
-        #parameters = ntuple['eventDescriptor']
         self.route_event(ntuple['eventDescriptor'], "assertion")
         if self.verbose:
-          self.decoder.pprint_ntuple(ntuple)
+            self.decoder.pprint_ntuple(ntuple)
 
     def solve_conditional_command(self, ntuple):
         """ Takes in conditionalED. (API changed 5/26/16, ST) """
