@@ -16,7 +16,6 @@ See LICENSE.txt for licensing information.
 
 from nluas.core_agent import *
 import json
-#from nluas.language.spell_checker import *
 
 # Makes this work with both py2 and py3
 from six.moves import input
@@ -34,9 +33,6 @@ class TextAgent(CoreAgent):
         self.original = None
 
     def prompt(self):
-        #if not self.clarification:
-        #print("Calling prompt....")
-        #print("Clarification is: {}".format(self.clarification))
         msg = input("> ")
         if msg == "q":
             self.close(True)
@@ -52,7 +48,6 @@ class TextAgent(CoreAgent):
 
     def callback(self, ntuple):
         """ Callback for receiving information from UI-Agent. """
-        #ntuple = json.loads(ntuple)
         if "type" in ntuple and ntuple['type'] == "clarification":
             self.clarification = True
             self.original = ntuple['original']
@@ -66,4 +61,4 @@ class TextAgent(CoreAgent):
 
 if __name__ == "__main__":
     text = TextAgent(sys.argv[1:])
-    text.keep_alive(text.prompt())
+    text.keep_alive(text.prompt)
