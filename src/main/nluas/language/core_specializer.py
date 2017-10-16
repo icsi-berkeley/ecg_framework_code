@@ -49,8 +49,8 @@ class CoreSpecializer(UtilitySpecializer):
 
         self.fs = None
         UtilitySpecializer.__init__(self, analyzer)
-        self.parameter_templates = OrderedDict() #self.read_templates(path+"parameter_templates.json")
-        self.mood_templates = OrderedDict() #self.read_templates(path+"mood_templates.json")
+        self.parameter_templates = OrderedDict()
+        self.mood_templates = OrderedDict()
         self.descriptor_templates = OrderedDict()
         self.initialize_templates()
 
@@ -62,7 +62,6 @@ class CoreSpecializer(UtilitySpecializer):
 
         self.spans = None
 
-        #self.read_templates
 
     def set_spans(self, spans):
         """ Sets the current constructional spans to input spans. These are used for referent resolution. (TODO)."""
@@ -82,8 +81,8 @@ class CoreSpecializer(UtilitySpecializer):
             return self.get_headingDescriptor(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "PropertyModifier"):
             return self.get_property(fs.m)
-        #elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"): # Testing...
-        #    return self.specialize_event(fs.m)
+        elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "EventDescriptor"):
+           return self.specialize_event(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "Process"):
             return self.fill_parameters(fs.m)
         elif self.analyzer.issubtype("SCHEMA", fs.m.type(), "SPG"):
@@ -96,7 +95,6 @@ class CoreSpecializer(UtilitySpecializer):
                                             "objectDescriptor": self.get_objectDescriptor(fs.m.landmark)}}
         else:
             raise Exception("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
-            #print("Unable to specialize fragment with meaning of {}.".format(fs.m.type()))
 
     def initialize_templates(self):
         """ Initializes templates from path, set above. """
@@ -107,11 +105,9 @@ class CoreSpecializer(UtilitySpecializer):
 
     def read_templates(self, filename):
         """ Sets each template to ordered dict."""
-        #print("Parsing " + filename)
         base = OrderedDict()
         # Add basic information from templates
         with open(filename, "r") as data_file:
-            #data = json.loads(data_file.read())
             data = json.load(data_file, object_pairs_hook=OrderedDict)
             for name, template in data['templates'].items():
                 setattr(self, name, template)
@@ -124,25 +120,20 @@ class CoreSpecializer(UtilitySpecializer):
                     if parent in base:
                         template = self.unify_templates(template, base[parent])
                     else:
-                        raise TemplateException("Formatting issue with template definition for '{}'. Listed parent '{}' does not exist.".format(name, parent))
                         # Throw exception
+                        raise TemplateException("Formatting issue with template definition for '{}'.\
+                                                 Listed parent '{}' does not exist.".format(name, parent))
                 template.pop("parents")
         return base
 
     def unify_templates(self, child, parent):
-        """ Unifies a child and parent template. Adds all parent key-value pairs 
+        """ Unifies a child and parent template. Adds all parent key-value pairs
         unless the key already exists in the child. """
         child.update({key:value for (key, value) in parent.items() if key not in child})
         return child
-        """
-        for k, v in parent.items():
-            if k not in child:
-                child.update({k: v})
-        return child
-        """
 
     def specialize_event(self, content):
-        """ Takes in an EventDescriptor, and uses event_templates to drive specialization. 
+        """ Takes in an EventDescriptor, and uses event_templates to drive specialization.
         Calls fill_value for each item in the corresponding event template. """
         ed = content.type()
         if ed in self.event_templates:
@@ -154,10 +145,8 @@ class CoreSpecializer(UtilitySpecializer):
             eventDescriptor[k] = self.fill_value(k, v, content)
         return eventDescriptor
 
-
-
     def specialize(self, fs):
-        """ Takes in a FeatureStruct (fs), produces an ntuple. 
+        """ Takes in a FeatureStruct (fs), produces an ntuple.
         Currently requires that the FS be a discourse utterance with a mood ("Declarative", etc.),
         and an associated EventDescriptor. However, this could be generalized to route
         specialized n-tuples for other types of input, like an NP.
@@ -168,7 +157,7 @@ class CoreSpecializer(UtilitySpecializer):
             self.fs = fs
             mood = str(fs.m.mood).replace("-", "_").lower()
             if hasattr(fs.m, "addressee"):
-                addressee = self.get_objectDescriptor(fs.m.addressee) # and fs.m.addressee.has_filler()
+                addressee = self.get_objectDescriptor(fs.m.addressee)
                 if "referent" in addressee:
                     self.addressees.append({'objectDescriptor': addressee})
             content = fs.m.content
@@ -181,14 +170,13 @@ class CoreSpecializer(UtilitySpecializer):
                 parameters = ntuple['eventDescriptor']['eventProcess']
                 if mood == "wh_question":
                     ntuple['return_type'], ntuple['eventDescriptor']['eventProcess']['specificWh'] = self.get_return_type(parameters)
-        
+
         if ntuple:
             ntuple = self.map_ontologies(ntuple)
 
             if self.debug_mode:
                 pprint.pprint(ntuple)
             return dict(ntuple)
-
 
     def get_return_type(self, parameters):
         """ If sentence is a wh-sentence, returns the corresponding return_type. """
@@ -214,9 +202,8 @@ class CoreSpecializer(UtilitySpecializer):
                         return r, w
         return return_type, specificWh
 
-
     def fill_parameters(self, eventProcess):
-        """ Identifies the corresponding parameter template ("MotionPath", etc.). 
+        """ Identifies the corresponding parameter template ("MotionPath", etc.).
         If none are found, it chooses a parent template ("Motion", "Process", etc.).
         For each item in the template, it calls fill_value. """
         process = eventProcess.type()
@@ -259,15 +246,12 @@ class CoreSpecializer(UtilitySpecializer):
                             returned["instrument"] = self.get_objectDescriptor(modifier.instrument)
         return returned
 
-
-
     def check_parameter_subtypes(self, process, templates):
         """ Finds the parent type of the input process among the template list. """
         for key in templates:
             if self.analyzer.issubtype("SCHEMA", process, key):
                 return key
         return None
-
 
     def get_headingDescriptor(self, headingSchema):
         """ Returns a heading for a headingDescriptor. Could be more complex depending on domain,
@@ -314,7 +298,7 @@ class CoreSpecializer(UtilitySpecializer):
                 return attribute.type()
             elif attribute.__value__ != "None":
                 return attribute.__value__
-            
+
         #return value  # TODO: Which one to return? Default or None?
         return final_value
 
@@ -324,7 +308,9 @@ class CoreSpecializer(UtilitySpecializer):
 
     def get_scaleDescriptor(self, scale):
         """ Returns a scaleDescriptor, with unit type, the actual value, and the associated property. """
-        return {'units': scale.extras.quantity.units.type(), 'value': float(scale.extras.quantity.amount.value), 'property': scale.extras.quantity.property.type()}
+        return {'units': scale.extras.quantity.units.type(),
+                'value': float(scale.extras.quantity.amount.value),
+                'property': scale.extras.quantity.property.type()}
 
     def get_property(self, pm):
         """ Returns the relevant property values for a PropertyModifier. """
@@ -347,7 +333,6 @@ class CoreSpecializer(UtilitySpecializer):
             else:
                 returned['direction'] = 'decrease'
         return returned
-
 
     def get_state(self, eventProcess):
         """ Returns the state for a Stasis Process. """
@@ -400,7 +385,7 @@ class CoreSpecializer(UtilitySpecializer):
         final = {}
         value = getattr(spg, valueType)
         if value.type() == "home":
-            return {'location':"home"} 
+            return {'location':"home"}
         elif value.ontological_category.type() == "location":
             return {'location': (float(value.xCoord), float(value.xCoord))}
         elif value.ontological_category.type() == "region":
@@ -452,14 +437,12 @@ class CoreSpecializer(UtilitySpecializer):
         return final
 
     def get_relationDescriptor(self, relation):
-        """ Returns a relation descriptor, describing in a high-level way the relation between several entities. 
+        """ Returns a relation descriptor, describing in a high-level way the relation between several entities.
         The Problem Solver then uses the relation in the application domain's context to determine the actual meaning. """
         returned = dict()
         template = self.descriptor_templates["relationDescriptor"] if "relationDescriptor" in self.descriptor_templates else dict()
         for k, v in template.items():
-            #if hasattr(relation, v) and getattr(relation, v).has_filler():
             value = self.fill_value(k, v, relation)
-            #print(value)
             if value:
                 returned[k] = value
         return returned
@@ -470,8 +453,6 @@ class CoreSpecializer(UtilitySpecializer):
                     first=self.get_objectDescriptor(item.rd1),
                     second=self.get_objectDescriptor(item.rd2))
 
-
-
     def get_objectDescriptor(self, item, resolving=False):
         """ Returns an object descriptor from descriptor template. Uses RD elements, as well as other things pointing to object. """
         returned = {}
@@ -479,13 +460,12 @@ class CoreSpecializer(UtilitySpecializer):
             item.pointers = self.invert_pointers(item)
         if self.analyzer.issubtype("SCHEMA", item.type(), "ConjRD"):
             returned = self.get_conjRDDescriptor(item, resolving)
-    
+
         template = self.descriptor_templates['objectDescriptor'] if "objectDescriptor" in self.descriptor_templates else dict()
         allowed_pointers = template['pointers'] if 'pointers' in template else []
-        
+
         for k, v in template.items():
-            if k not in ["pointers", "description"] and hasattr(item, k):# and getattr(item, v).type():
-                #attribute = getattr(item, v).type()
+            if k not in ["pointers", "description"] and hasattr(item, k):
                 attribute = self.fill_value(k, v, item)
                 if k == "ontological_category":
                     k = "type"
@@ -513,18 +493,15 @@ class CoreSpecializer(UtilitySpecializer):
                 return self.resolve_referents(returned, antecedents=self.addressees)['objectDescriptor']
         return returned
 
-
     def get_RDExtras(self, extras):
         """ RD Extras contain embedded RD information, like specificWh, Event-description, quantity. """
         template = self.descriptor_templates['RDExtras']
         returned = {}
         for key, value in template.items():
-            #if hasattr(extras, value):
             final = self.fill_value(key, value, extras)
             if final:
                 returned[key] = final
         return returned
-
 
     def get_eventRDDescriptor(self, item):
         """ Event RDs have an associated event description. """
@@ -541,7 +518,6 @@ class CoreSpecializer(UtilitySpecializer):
         returned.update(eventDescription)
         return returned
 
-
     def fill_pointer(self, pointer, item):
         """ Fills pointers to an RD in a structured way. """
         if hasattr(pointer, "modifiedThing") and pointer.modifiedThing.index() != item.index():
@@ -553,9 +529,9 @@ class CoreSpecializer(UtilitySpecializer):
         elif hasattr(pointer, "possessed") and pointer.possessed.index() != item.index():
             return None
         else:
-            #if self.analyzer.issubtype("SCHEMA", pointer.type(), "MetaphoricalScalarModification"):
-            #    value = float(pointer.value) if pointer.value.type() == "scalarValue" else pointer.value.type()
-            #    return {pointer.property.type(): value, "metaphor": {"source": pointer.met.source.type(), "name": pointer.met.name.type()}}
+            if self.analyzer.issubtype("SCHEMA", pointer.type(), "MetaphoricalScalarModification"):
+               value = float(pointer.value) if pointer.value.type() == "scalarValue" else pointer.value.type()
+               return {pointer.property.type(): value, "metaphor": {"source": pointer.met.source.type(), "name": pointer.met.name.type()}}
             if self.analyzer.issubtype('SCHEMA', pointer.type(), "PropertyModifier"):
                 if pointer.value.type() == "scalarValue":
                     return {pointer.property.type(): float(pointer.value)}
@@ -584,7 +560,6 @@ class CoreSpecializer(UtilitySpecializer):
             elif self.analyzer.issubtype("SCHEMA", pointer.type(), "Relation") and pointer.entity1.index() == item.index():
                 return dict(relationDescriptor=self.get_relationDescriptor(pointer))
 
-
     def get_processDescriptor(self, process, referent):
         """ Retrieves information about a process, according to existing templates. Meant to be implemented
         in specific extensions of this interface.
@@ -592,6 +567,3 @@ class CoreSpecializer(UtilitySpecializer):
         Can be overwritten as needed -- here, it calls the params_for_compound to gather essentially an embedded n-tuple.
         """
         return self.fill_parameters(process)
-
-
-
