@@ -71,6 +71,7 @@ class CoreAgent(object):
         self.logfile = args.logfile
         self.loglevel = args.loglevel
         self.logagent = args.logagent
+        self.verbose = args.verbose
         self._keep_alive = True
         self._broadcasted = False
 
@@ -80,6 +81,7 @@ class CoreAgent(object):
         parser.add_argument("-logfile", type=str, help="indicate logfile path for logging output")
         parser.add_argument("-loglevel", type=str, help="indicate loglevel for logging output: warn, debug, error")
         parser.add_argument("-logagent", type=str, help="indicate agent responsible for logging output")
+        parser.add_argument("--verbose", "-v", action="store_true", help="print logging and debug information to stdout")
         return parser
 
     def close(self, quit_federation=False):
@@ -98,7 +100,7 @@ class CoreAgent(object):
             if func:
                 func()
             else:
-                time.sleep(0.1)
+                time.sleep(1)
 
     def is_quit(self, ntuple):
         """ Checks if an ntuple is the application quit message """

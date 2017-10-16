@@ -27,8 +27,6 @@ import json
 import pprint
 
 
-
-#path = os.getcwd() + "/src/main/nluas/"
 path = os.path.dirname(os.path.realpath(__file__))
 
 def check_complexity(n):
@@ -55,7 +53,6 @@ class CoreProblemSolver(CoreAgent):
         self.p_features = None
         self.eventFeatures=None
         self.parameter_templates = OrderedDict()
-        #self.initialize_templates()
 
 
     def setup_solver_parser(self):
@@ -73,7 +70,6 @@ class CoreProblemSolver(CoreAgent):
         self.parameter_templates = self.read_templates(self.__path__+"parameter_templates.json")
 
     def request_clarification(self, ntuple, message="This ntuple requires clarification."):
-        #new = self.decoder.convert_to_JSON(ntuple)
         request = {'ntuple': ntuple, 'message': message, 'type': 'clarification', 'tag': self.address}
         self.transport.send(self.ui_address, request)
 
@@ -90,13 +86,11 @@ class CoreProblemSolver(CoreAgent):
         self.transport.send(self.ui_address, request)
 
     def solve(self, ntuple):
-        #ntuple = self.decoder.convert_JSON_to_ntuple(json_ntuple)
         if self.check_for_clarification(ntuple):
             self.request_clarification(ntuple=ntuple)
         else:
             self.ntuple = ntuple
             predicate_type = ntuple['predicate_type']
-            #print(predicate_type)
             try:
                 dispatch = getattr(self, "solve_%s" %predicate_type)
                 dispatch(ntuple)
@@ -117,27 +111,33 @@ class CoreProblemSolver(CoreAgent):
 
     def solve_command(self, ntuple):
         self.route_event(ntuple['eventDescriptor'], "command")
-        #self.decoder.pprint_ntuple(ntuple)
+        if self.verbose:
+          self.decoder.pprint_ntuple(ntuple)
 
     def solve_query(self, ntuple):
         self.route_event(ntuple['eventDescriptor'], "query")
-        #self.decoder.pprint_ntuple(ntuple)
+        if self.verbose:
+          self.decoder.pprint_ntuple(ntuple)
 
     def solve_assertion(self, ntuple):
         #parameters = ntuple['eventDescriptor']
         self.route_event(ntuple['eventDescriptor'], "assertion")
-        #self.decoder.pprint_ntuple(ntuple)
+        if self.verbose:
+          self.decoder.pprint_ntuple(ntuple)
 
     def solve_conditional_command(self, ntuple):
         """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print("Function is deprecated!")
         print(ntuple.keys())
 
     def solve_conditional_assertion(self, ntuple):
         """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print("Function is deprecated!")
         print(ntuple.keys())
 
     def solve_conditional_query(self, ntuple):
         """ Takes in conditionalED. (API changed 5/26/16, ST) """
+        print("Function is deprecated!")
         print(ntuple.keys())
 
     def route_event(self, eventDescription, predicate):
@@ -153,7 +153,6 @@ class CoreProblemSolver(CoreAgent):
         self.eventFeatures = None
         if return_value:
             if predicate == "query":
-                #print("Responding via n-tuple...")
                 self.respond_to_query(return_value)
             elif predicate == "command":
                 self.return_error_descriptor(return_value)
@@ -169,20 +168,16 @@ class CoreProblemSolver(CoreAgent):
             template = parameters['template']
             action = parameters['actionary']
             try:
-                #if "processFeatures" in parameters['p_features']:
                 if parameters['p_features']:
                     self.p_features = parameters['p_features']['processFeatures']
                 dispatch = getattr(self, "{}_{}".format(predicate, action))
 
-                #return_value = dispatch(parameters)
                 return_value = self.route_dispatch(dispatch, parameters)
                 self.history.insert(0, (parameters, True))
                 self.p_features = None
                 return return_value
             except AttributeError as e:
-                #traceback.print_exc()
                 message = "I cannot solve the '{}_{}' action".format(predicate,action)
-                #pprint.pprint(parameters)
                 self.history.insert(0, (parameters, False))
                 self.identification_failure(message)
 
