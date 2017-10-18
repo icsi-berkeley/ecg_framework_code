@@ -1,5 +1,5 @@
 # framework-code
-Core Framework code for NLU system, can be extended for different tasks.
+Core Framework code for NLU system, can be extended for different tasks. Please use the latest stable release.
 
 See the [Wiki](https://github.com/icsi-berkeley/framework_code/wiki) for more detailed information on this code.
 
