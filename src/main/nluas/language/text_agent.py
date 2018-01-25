@@ -20,10 +20,6 @@ import json
 # Makes this work with both py2 and py3
 from six.moves import input
 
-class WaitingException(Exception):
-    def __init__(self, message):
-        self.message = message
-
 class TextAgent(CoreAgent):
     def __init__(self, args):
         CoreAgent.__init__(self, args)

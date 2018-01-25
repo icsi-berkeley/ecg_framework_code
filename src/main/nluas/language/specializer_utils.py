@@ -12,27 +12,7 @@ See LICENSE.txt for licensing information.
 """
 
 
-import sys, traceback
-import copy
-from copy import deepcopy
-import pickle
-import time
-import json
-from pprint import pprint
-from nluas.feature import as_featurestruct, StructJSONEncoder
-from json import dumps
-from nluas.utils import flatten, update, Struct
-from itertools import chain
-try:
-    # Python 2?
-    from xmlrpclib import ServerProxy, Fault  # @UnresolvedImport @UnusedImport
-except:
-    # Therefore it must be Python 3.
-    from xmlrpc.client import ServerProxy, Fault #@UnusedImport @UnresolvedImport @Reimport
-
-from os.path import basename
-from nluas.language.analyzer_proxy import Analyzer
-# from pprint import pprint, pformat
+from nluas.utils import update, Struct
 
 
 def updated(d, *maps, **entries):
@@ -313,5 +293,3 @@ class UtilitySpecializer(DebuggingSpecializer):
                 n[k] = self.mappings[v]
                 v = self.mappings[v]
         return n
-
-
