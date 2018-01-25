@@ -31,10 +31,6 @@ from collections import OrderedDict
 # Makes this work with both py2 and py3
 from six.moves import input
 
-class WaitingException(Exception):
-    def __init__(self, message):
-        self.message = message
-
 class UserAgent(CoreAgent):
     def __init__(self, args):
         CoreAgent.__init__(self, args)
@@ -103,7 +99,7 @@ class UserAgent(CoreAgent):
                     ntuple = self.specializer.specialize(fs)
                     return ntuple
                 except Exception as e:
-                    self.verbose:
+                    if self.verbose:
                         traceback.print_exc()
                         self.output_stream(self.name, e)
                     index += 1

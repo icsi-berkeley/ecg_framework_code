@@ -21,9 +21,7 @@ See LICENSE.txt for licensing information.
 
 from nluas.ntuple_decoder import *
 from nluas.core_agent import *
-import random
 import sys, traceback
-import json
 import pprint
 
 
