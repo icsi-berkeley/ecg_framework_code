@@ -20,6 +20,7 @@ See LICENSE.txt for licensing information.
 """
 
 from nluas.language.core_specializer import *
+from nluas.language.word_checker import WordChecker
 from nluas.core_agent import *
 from nluas.language.analyzer_proxy import *
 from nluas.ntuple_decoder import NtupleDecoder
@@ -33,7 +34,9 @@ from six.moves import input
 
 class UserAgent(CoreAgent):
     def __init__(self, args):
-        CoreAgent.__init__(self, args)
+        """args are execpted to be a prefs_path followed by the CoreAgent args"""
+        self.prefs_path = args[0]
+        CoreAgent.__init__(self, args[1:])
         self.initialize_UI()
         self.solve_destination = "{}_{}".format(self.federation, "ProblemSolver")
         self.speech_address = "{}_{}".format(self.federation, "SpeechAgent")
@@ -56,6 +59,7 @@ class UserAgent(CoreAgent):
             try:
                 self.initialize_analyzer()
                 self.initialize_specializer()
+                self.initialize_wordchecker()
                 connected = True
             except ConnectionRefusedError as e:
                 if not printed:
@@ -77,6 +81,9 @@ class UserAgent(CoreAgent):
             self.transport.quit_federation()
             quit()
 
+    def initialize_wordchecker(self):
+        self.word_checker = WordChecker(self.prefs_path, self.analyzer.get_lexicon())
+
     def match_spans(self, spans, sentence):
         sentence = sentence.replace(".", " . ").replace(",", " , ").replace("?", " ? ").replace("!", " ! ").split()
         final = []
@@ -87,6 +94,12 @@ class UserAgent(CoreAgent):
 
     def process_input(self, msg):
         try:
+            table = self.word_checker.check(msg)
+            if any(table['failed']):
+                failures = self.word_checker.get_failed(table)
+                raise Exception("Unknown tokens in inputs: {}".format(failures))
+
+            msg = self.word_checker.join_checked(table['checked'])
             full_parse = self.analyzer.full_parse(msg)
             semspecs = full_parse['parse']
             spans = full_parse['spans']
