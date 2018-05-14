@@ -9,7 +9,7 @@
 # bridge clients, and then sends the received message
 # to all connected clients.
 #
-# It knows nothing about federations, so you should 
+# It knows nothing about federations, so you should
 # have a separate server for each federation.
 #
 #
@@ -123,7 +123,7 @@ def main(argv):
                         c.sendall(rec)
         # end for client
     # end while True
-# end main()    
+# end main()
 
 
 def server_quit():
@@ -147,7 +147,7 @@ def parse_arguments(strs):
     parser.add_argument('-port', type=int, default=7417, help='Server port to listen on. Use 0 to assign an unused non-root port. Defaults to %(default)s.')
     parser.add_argument('-host', default='', help='Which host IP to listen on. Typical settings are "localhost" if you only want connections from this host, the fully qualified host name, or blank if you want to accept connections sent to any interface the local host uses. Defaults to %(default)s.')
     parser.add_argument('-timeout', type=int, default=0, help='If the server has no activity after this amount of time, it automatically exits. Use 0 to never exit. Default is %(default)s.')
-    parser.add_argument('-loglevel', 
+    parser.add_argument('-loglevel',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         default='INFO',
                         help='Logging level (default %(default)s)')

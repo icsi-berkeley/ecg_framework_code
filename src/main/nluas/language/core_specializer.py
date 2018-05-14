@@ -526,9 +526,9 @@ class CoreSpecializer(UtilitySpecializer):
         elif hasattr(pointer, "possessed") and pointer.possessed.index() != item.index():
             return None
         else:
-            if self.analyzer.issubtype("SCHEMA", pointer.type(), "MetaphoricalScalarModification"):
-               value = float(pointer.value) if pointer.value.type() == "scalarValue" else pointer.value.type()
-               return {pointer.property.type(): value, "metaphor": {"source": pointer.met.source.type(), "name": pointer.met.name.type()}}
+            # if self.analyzer.issubtype("SCHEMA", pointer.type(), "MetaphoricalScalarModification"):
+            #    value = float(pointer.value) if pointer.value.type() == "scalarValue" else pointer.value.type()
+            #    return {pointer.property.type(): value, "metaphor": {"source": pointer.met.source.type(), "name": pointer.met.name.type()}}
             if self.analyzer.issubtype('SCHEMA', pointer.type(), "PropertyModifier"):
                 if pointer.value.type() == "scalarValue":
                     return {pointer.property.type(): float(pointer.value)}
